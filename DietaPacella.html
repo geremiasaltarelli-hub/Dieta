@@ -114,6 +114,31 @@ textarea:focus{outline:none;border-color:var(--green-light);}
   <div class="kcal-totale" id="kcalHeader">⚡ 0 kcal totali</div>
 </div>
 
+<!-- MEDIA SETTIMANALE -->
+<div class="card" id="mediaPanel" style="margin-bottom:14px;background:linear-gradient(135deg,#f8f4ff,#f0eaff);border:1.5px solid #c4a8f0">
+  <div class="card-header" style="border-bottom:2px solid #ddd0f7;padding-bottom:8px">
+    <span class="card-icon">📈</span>
+    <span class="card-title" style="color:#5a3d8a">Media Calorica Settimanale</span>
+    <span style="margin-left:auto;font-size:.75rem;color:var(--muted)" id="mediaSettimanaRange"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <div style="background:white;border-radius:10px;padding:10px;text-align:center">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:3px">🎯 Fabbisogno giornaliero</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#5a3d8a">2.289 kcal</div>
+      <div style="font-size:.68rem;color:var(--muted)">per mantenere il peso</div>
+      <div style="font-size:.68rem;color:var(--red);font-weight:700">1.800 kcal per dimagrire</div>
+    </div>
+    <div style="background:white;border-radius:10px;padding:10px;text-align:center">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:3px">📊 Media questa settimana</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700" id="mediaKcal">— kcal</div>
+      <div style="font-size:.72rem;font-weight:700;margin-top:3px" id="mediaStatus">Nessun dato</div>
+    </div>
+  </div>
+  <!-- Barra giorni settimana -->
+  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Calorie per giorno</div>
+  <div id="mediaGiorni" style="display:flex;flex-direction:column;gap:5px"></div>
+</div>
+
 <!-- 1. ROTAZIONE SECONDI -->
 <div class="rot-panel">
   <div class="card-header">
@@ -1067,6 +1092,7 @@ function ricalcola() {
   document.getElementById('kcalHeader').textContent = '⚡ ' + totale + ' kcal totali';
 
   calcolaRotazione(document.getElementById('dataInput').value);
+  calcolaMediaSettimanale(document.getElementById('dataInput').value);
 }
 
 function cambiaData() {
@@ -1233,6 +1259,7 @@ function salvaGiorno() {
   localStorage.setItem('dieta_' + ds, JSON.stringify(raccogliDati()));
   aggiornaStorico();
   calcolaRotazione(ds);
+  calcolaMediaSettimanale(ds);
   alert('✅ Giorno salvato!');
 }
 function resetGiorno() { resetCampi(); ricalcola(); }
@@ -1296,6 +1323,85 @@ function importaDati(event) {
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+// ============ MEDIA SETTIMANALE ============
+const FABBISOGNO = 2289;
+const OBIETTIVO = 1800;
+
+function calcolaMediaSettimanale(dataCorrente) {
+  if (!dataCorrente) return;
+  const lun = getLunedi(dataCorrente);
+  const dom = new Date(lun); dom.setDate(lun.getDate() + 6);
+  const rangeEl = document.getElementById('mediaSettimanaRange');
+  if (rangeEl) rangeEl.textContent = dateToStr(lun) + ' → ' + dateToStr(dom);
+
+  let totKcal = 0, giorniConDati = 0;
+  const giorniData = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(lun); d.setDate(lun.getDate() + i);
+    const ds = dateToStr(d);
+    const isToday = ds === dataCorrente;
+    let kcal = 0;
+    const saved = localStorage.getItem('dieta_' + ds);
+    if (saved) {
+      const dati = JSON.parse(saved);
+      const m = dati.totale ? dati.totale.match(/(\d+)/) : null;
+      kcal = m ? parseInt(m[1]) : 0;
+    }
+    if (isToday) {
+      const liveEl = document.getElementById('rTotale');
+      if (liveEl) { const m = liveEl.textContent.match(/(\d+)/); if (m) kcal = parseInt(m[1]); }
+    }
+    if (kcal > 0) { totKcal += kcal; giorniConDati++; }
+    giorniData.push({ nome: giorniNomi[i], ds, kcal, isToday });
+  }
+
+  const media = giorniConDati > 0 ? Math.round(totKcal / giorniConDati) : 0;
+  const mediaEl = document.getElementById('mediaKcal');
+  const statusEl = document.getElementById('mediaStatus');
+
+  if (mediaEl) {
+    if (media === 0) {
+      mediaEl.textContent = '— kcal'; mediaEl.style.color = '#aaa';
+      if (statusEl) { statusEl.textContent = 'Nessun dato questa settimana'; statusEl.style.color = '#aaa'; }
+    } else {
+      mediaEl.textContent = media.toLocaleString('it-IT') + ' kcal';
+      if (media <= OBIETTIVO) {
+        mediaEl.style.color = '#2d6a4f';
+        if (statusEl) { statusEl.textContent = '✅ Ottimo! Stai creando un deficit calorico'; statusEl.style.color = '#2d6a4f'; }
+      } else if (media <= FABBISOGNO) {
+        mediaEl.style.color = '#c9a84c';
+        if (statusEl) { statusEl.textContent = '🟡 Nella norma, ma poco deficit per dimagrire'; statusEl.style.color = '#c9a84c'; }
+      } else {
+        mediaEl.style.color = '#c1440e';
+        if (statusEl) { statusEl.textContent = '⚠️ Superi il fabbisogno di +' + (media - FABBISOGNO).toLocaleString('it-IT') + ' kcal/giorno'; statusEl.style.color = '#c1440e'; }
+      }
+    }
+  }
+
+  const container = document.getElementById('mediaGiorni');
+  if (!container) return;
+  container.innerHTML = '';
+  let hasData = false;
+  giorniData.forEach(({ nome, kcal, isToday }) => {
+    if (kcal === 0) return;
+    hasData = true;
+    const perc = Math.min(100, Math.round(kcal / FABBISOGNO * 100));
+    const percObj = Math.round(OBIETTIVO / FABBISOGNO * 100);
+    const col = kcal > FABBISOGNO ? '#c1440e' : kcal > OBIETTIVO ? '#c9a84c' : '#2d6a4f';
+    container.innerHTML += `
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:.72rem;font-weight:700;color:${isToday ? 'var(--green)' : 'var(--text)'};width:28px;flex-shrink:0">${nome.slice(0,3)}</div>
+        <div style="flex:1;background:#f0ece8;border-radius:5px;height:16px;position:relative;overflow:hidden">
+          <div style="height:100%;width:${perc}%;background:${col};border-radius:5px"></div>
+          <div style="position:absolute;top:0;left:${percObj}%;height:100%;width:2px;background:rgba(193,68,14,0.4)"></div>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;color:${col};width:70px;text-align:right;flex-shrink:0">${kcal.toLocaleString('it-IT')} kcal</div>
+      </div>`;
+  });
+  if (!hasData) container.innerHTML = '<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:8px">Nessun giorno salvato questa settimana</div>';
 }
 
 window.onload = () => {
