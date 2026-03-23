@@ -351,6 +351,16 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <option value="tonno_scatola|103">Tonno in scatola al naturale (110g → 113 kcal)</option>
  <option value="salmone_affumicato|172">Salmone affumicato (100g → 172 kcal)</option>
  </optgroup>
+ <optgroup label="🔄 Alternativa al pesce (come da prescrizione Dott. Pacella)">
+ <option value="ceci|246">🫘 Ceci — alternativa al pesce (150g freschi → 246 kcal)</option>
+ <option value="fagioli|191">🫘 Fagioli — alternativa al pesce (150g freschi → 191 kcal)</option>
+ <option value="lenticchie|174">🫘 Lenticchie — alternativa al pesce (150g fresche → 174 kcal)</option>
+ <option value="piselli|107">🫘 Piselli — alternativa al pesce (150g freschi → 107 kcal)</option>
+ <option value="lupini|174">🫘 Lupini — alternativa al pesce (150g → 174 kcal)</option>
+ <option value="fave|108">🫘 Fave — alternativa al pesce (150g fresche → 108 kcal)</option>
+ <option value="hummus|354">🫘 Hummus di ceci — alternativa al pesce (150g → 354 kcal)</option>
+ <option value="uova2_alt_pesce|144">🥚 2 Uova — alternativa al pesce (→ 144 kcal)</option>
+ </optgroup>
  <optgroup label="🥚 Uova — porzione fissa">
  <option value="uova2|144">2 Uova (frittata / sodo / coque → 144 kcal)</option>
  <option value="uova1|72">1 Uovo (→ 72 kcal)</option>
@@ -616,6 +626,16 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <option value="sardine|129">Sarde / Acciughe (200g → 258 kcal)</option>
  <option value="tonno_scatola|103">Tonno in scatola (110g → 113 kcal)</option>
  <option value="salmone_affumicato|172">Salmone affumicato (100g → 172 kcal)</option>
+ </optgroup>
+ <optgroup label="🔄 Alternativa al pesce (come da prescrizione Dott. Pacella)">
+ <option value="ceci|246">🫘 Ceci — alternativa al pesce (150g freschi → 246 kcal)</option>
+ <option value="fagioli|191">🫘 Fagioli — alternativa al pesce (150g freschi → 191 kcal)</option>
+ <option value="lenticchie|174">🫘 Lenticchie — alternativa al pesce (150g fresche → 174 kcal)</option>
+ <option value="piselli|107">🫘 Piselli — alternativa al pesce (150g freschi → 107 kcal)</option>
+ <option value="lupini|174">🫘 Lupini — alternativa al pesce (150g → 174 kcal)</option>
+ <option value="fave|108">🫘 Fave — alternativa al pesce (150g fresche → 108 kcal)</option>
+ <option value="hummus|354">🫘 Hummus di ceci — alternativa al pesce (150g → 354 kcal)</option>
+ <option value="uova2_alt_pesce|144">🥚 2 Uova — alternativa al pesce (→ 144 kcal)</option>
  </optgroup>
  <optgroup label="🥚 Uova — porzione fissa">
  <option value="uova2|144">2 Uova → 144 kcal</option>
@@ -1217,8 +1237,11 @@ function getLunedi(dateStr) {
 function getCatFromValue(val) {
  if (!val) return null;
  const k = val.split('|')[0];
+ // Alternativa al pesce: legumi e uova vanno nella loro categoria
+ if (k === 'uova2_alt_pesce') return 'uova';
+ if (['ceci','fagioli','lenticchie','piselli','lupini','fave','hummus'].includes(k)) return 'legumi';
  for (const cat of CATEGORIE) {
- if (cat.keywords.includes(k)) return cat.id;
+  if (cat.keywords.includes(k)) return cat.id;
  }
  return null;
 }
