@@ -111,6 +111,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
   <label>📅 Data:</label>
   <input type="date" id="dataInput" onchange="cambiaData()">
   <div class="giorno-label" id="giornoLabel"></div>
+  <div id="autoSaveIndicator" style="font-size:.72rem;color:var(--green);font-weight:700;opacity:0;transition:opacity 0.5s;margin-left:8px">✅ Salvato</div>
   <div class="kcal-totale" id="kcalHeader">⚡ 0 kcal totali</div>
 </div>
 
@@ -1093,6 +1094,25 @@ function ricalcola() {
 
   calcolaRotazione(document.getElementById('dataInput').value);
   calcolaMediaSettimanale(document.getElementById('dataInput').value);
+
+  // Autosalvataggio con debounce
+  clearTimeout(window._autoSaveTimer);
+  window._autoSaveTimer = setTimeout(() => {
+    const ds = document.getElementById('dataInput').value;
+    if (!ds) return;
+    localStorage.setItem('dieta_' + ds, JSON.stringify(raccogliDati()));
+    aggiornaStorico();
+    calcolaRotazione(ds);
+    calcolaMediaSettimanale(ds);
+    // Mostra indicatore salvato
+    const el = document.getElementById('autoSaveIndicator');
+    if (el) {
+      el.textContent = '✅ Salvato automaticamente';
+      el.style.opacity = '1';
+      clearTimeout(window._fadeTimer);
+      window._fadeTimer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+    }
+  }, 1000);
 }
 
 function cambiaData() {
@@ -1260,7 +1280,8 @@ function salvaGiorno() {
   aggiornaStorico();
   calcolaRotazione(ds);
   calcolaMediaSettimanale(ds);
-  alert('✅ Giorno salvato!');
+  const el = document.getElementById('autoSaveIndicator');
+  if (el) { el.textContent = '💾 Salvato!'; el.style.opacity = '1'; setTimeout(()=>{ el.style.opacity='0'; }, 2000); }
 }
 function resetGiorno() { resetCampi(); ricalcola(); }
 
