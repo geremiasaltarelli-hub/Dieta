@@ -106,7 +106,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </div>
  </div>
  <div class="header-info">
- <div class="paziente">Geremia Saltarelli</div>
+ <div class="paziente">Fabiola Guido</div>
  <div>Prescrizione 11.05.2025</div>
  </div>
 </div>
@@ -292,15 +292,15 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <div class="row-input">
  <select id="primoPranzo" onchange="ricalcola()">
  <option value="">— scegli il primo —</option>
- <optgroup label="Pasta e cereali (default 150g crudo)">
- <option value="pasta|352">🍝 Pasta (150g crudo → ~528 kcal cotto)</option>
+ <optgroup label="Pasta e cereali (default 50g crudo)">
+ <option value="pasta|352">🍝 Pasta (50g crudo → ~176 kcal)</option>
  <option value="riso|350">🍚 Riso (50g crudo)</option>
  <option value="farro|340">🌾 Farro in chicco (50g)</option>
  <option value="orzo|352">🌾 Orzo in chicco (50g)</option>
  <option value="quinoa|368">🌾 Quinoa (50g)</option>
- <option value="amaranto|371">🌾 Amaranto / Miglio (150g)</option>
- <option value="grano_saraceno|343">🌾 Grano saraceno / Kamut (150g)</option>
- <option value="pasta_legumi_p|340">🫘 Pasta di legumi (150g)</option>
+ <option value="amaranto|371">🌾 Amaranto / Miglio (50g)</option>
+ <option value="grano_saraceno|343">🌾 Grano saraceno / Kamut (50g)</option>
+ <option value="pasta_legumi_p|340">🫘 Pasta di legumi (50g)</option>
  </optgroup>
  <optgroup label="Alternativa: Pane OPPURE Patate (non entrambi)">
  <option value="pane_pranzo|260">🍞 Pane (60g → 156 kcal)</option>
@@ -566,15 +566,15 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <div class="row-input">
  <select id="primoCena" onchange="ricalcola()">
  <option value="">— scegli il primo —</option>
- <optgroup label="Pasta e cereali (default 100g crudo)">
- <option value="pasta_c|352">🍝 Pasta (100g crudo → 352 kcal)</option>
+ <optgroup label="Pasta e cereali (default 50g crudo)">
+ <option value="pasta_c|352">🍝 Pasta (50g crudo → ~176 kcal)</option>
  <option value="riso_c|350">🍚 Riso (100g)</option>
  <option value="farro_c|340">🌾 Farro in chicco (100g)</option>
  <option value="orzo_c|352">🌾 Orzo in chicco (100g)</option>
  <option value="quinoa_c|368">🌾 Quinoa (100g)</option>
  <option value="amaranto_c|371">🌾 Amaranto / Miglio (100g)</option>
  <option value="grano_sar_c|343">🌾 Grano saraceno / Kamut (100g)</option>
- <option value="pasta_leg_c|340">🫘 Pasta di legumi (60g)</option>
+ <option value="pasta_leg_c|340">🫘 Pasta di legumi (50g)</option>
  </optgroup>
  <optgroup label="Alternativa pane (default 120g)">
  <option value="pane_cena|260">🍞 Pane (50g → 130 kcal)</option>
@@ -1709,8 +1709,8 @@ function importaDati(event) {
 }
 
 // ============ MEDIA SETTIMANALE ============
-const FABBISOGNO = 1800;
-const OBIETTIVO = 1500;
+const FABBISOGNO = 2046;
+const OBIETTIVO = 1550;
 
 function calcolaMediaSettimanale(dataCorrente) {
  if (!dataCorrente) return;
