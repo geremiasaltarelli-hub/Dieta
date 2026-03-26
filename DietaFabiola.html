@@ -292,15 +292,15 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <div class="row-input">
  <select id="primoPranzo" onchange="ricalcola()">
  <option value="">— scegli il primo —</option>
- <optgroup label="Pasta e cereali (default 50g crudo)">
- <option value="pasta|352">🍝 Pasta (50g crudo → ~176 kcal)</option>
- <option value="riso|350">🍚 Riso (50g crudo)</option>
- <option value="farro|340">🌾 Farro in chicco (50g)</option>
- <option value="orzo|352">🌾 Orzo in chicco (50g)</option>
- <option value="quinoa|368">🌾 Quinoa (50g)</option>
- <option value="amaranto|371">🌾 Amaranto / Miglio (50g)</option>
- <option value="grano_saraceno|343">🌾 Grano saraceno / Kamut (50g)</option>
- <option value="pasta_legumi_p|340">🫘 Pasta di legumi (50g)</option>
+ <optgroup label="Pasta e cereali (default 80g crudo)">
+ <option value="pasta|352">🍝 Pasta (80g crudo → ~282 kcal)</option>
+ <option value="riso|350">🍚 Riso (80g crudo)</option>
+ <option value="farro|340">🌾 Farro in chicco (80g)</option>
+ <option value="orzo|352">🌾 Orzo in chicco (80g)</option>
+ <option value="quinoa|368">🌾 Quinoa (80g)</option>
+ <option value="amaranto|371">🌾 Amaranto / Miglio (80g)</option>
+ <option value="grano_saraceno|343">🌾 Grano saraceno / Kamut (80g)</option>
+ <option value="pasta_legumi_p|340">🫘 Pasta di legumi (80g)</option>
  </optgroup>
  <optgroup label="Alternativa: Pane OPPURE Patate (non entrambi)">
  <option value="pane_pranzo|260">🍞 Pane (60g → 156 kcal)</option>
@@ -310,7 +310,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit">
- <input type="number" id="qtaPrimoPranzo" value="50" min="0" max="400" onchange="ricalcola()">
+ <input type="number" id="qtaPrimoPranzo" value="80" min="0" max="400" onchange="ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kPrimoPranzo">— kcal</div>
@@ -567,7 +567,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <select id="primoCena" onchange="ricalcola()">
  <option value="">— scegli il primo —</option>
  <optgroup label="Pasta e cereali (default 50g crudo)">
- <option value="pasta_c|352">🍝 Pasta (50g crudo → ~176 kcal)</option>
+ <option value="pasta_c|352">🍝 Pasta (80g crudo → ~282 kcal)</option>
  <option value="riso_c|350">🍚 Riso (100g)</option>
  <option value="farro_c|340">🌾 Farro in chicco (100g)</option>
  <option value="orzo_c|352">🌾 Orzo in chicco (100g)</option>
@@ -586,7 +586,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit" id="qtaPrimoCenaWrap">
- <input type="number" id="qtaPrimoCena" value="50" min="0" max="400" onchange="ricalcola()">
+ <input type="number" id="qtaPrimoCena" value="80" min="0" max="400" onchange="ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kPrimoCena">— kcal</div>
@@ -1632,7 +1632,7 @@ function caricaDati(d) {
 function resetCampi() {
  IDS_SALVA.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
  olioCount = 0; aggiornaOlio();
- const defaults = {qtaPrimoPranzo:50,qtaSecondoPranzo:150,qtaPanePranzo:60,qtaVerduraPranzo:150,qtaPrimoCena:50,qtaSecondoCena:150,qtaVerduraCena:150};
+ const defaults = {qtaPrimoPranzo:80,qtaSecondoPranzo:150,qtaPanePranzo:60,qtaVerduraPranzo:150,qtaPrimoCena:80,qtaSecondoCena:150,qtaVerduraCena:150};
  Object.entries(defaults).forEach(([id,v]) => { const el = document.getElementById(id); if (el) el.value = v; });
 }
 function salvaGiorno() {
