@@ -900,6 +900,17 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <span id="pizzaStatus" style="margin-left:auto;font-size:.75rem;font-weight:700"></span>
  </div>
  <p style="font-size:.8rem;color:#6b2000;margin-bottom:9px;line-height:1.5">1 serata pizza/settimana (es. sabato): 1 pizza al piatto o 2-3 tranci. In alternativa cena libera + pane.</p>
+ <div style="margin-bottom:8px">
+  <div style="font-size:.72rem;font-weight:700;color:#8a2200;margin-bottom:4px">📊 Stima calorie serata pizza:</div>
+  <select id="pizzaKcal" onchange="aggiornaPizzaKcal()" style="border:1.5px solid #c1440e;border-radius:7px;padding:6px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fff5f2;width:100%">
+   <option value="0">— nessuna stima —</option>
+   <option value="700">🍕 Pizza al piatto margherita (~700 kcal)</option>
+   <option value="850">🍕 Pizza al piatto con ingredienti (~850 kcal)</option>
+   <option value="600">🍕 2-3 tranci (~600 kcal)</option>
+   <option value="900">🍴 Cena libera leggera (~900 kcal)</option>
+   <option value="1100">🍴 Cena libera abbondante (~1100 kcal)</option>
+  </select>
+ </div>
  <div style="display:flex;align-items:center;gap:8px">
  <input type="date" id="pizzaData" style="border:1.5px solid #c1440e;border-radius:7px;padding:5px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fff5f2;flex:1">
  <button onclick="usaPizza()" style="background:#c1440e;color:white;border:none;border-radius:7px;padding:7px 12px;font-family:Lato,sans-serif;font-weight:700;cursor:pointer;font-size:.82rem">✓ Usa</button>
@@ -1182,9 +1193,10 @@ function ricalcola() {
  const kUCC = getKcal('uovoCompC', null);
  const kVC = getKcal('verduraCena', 'qtaVerduraCena');
  const kFC = getKcal('fruttaCena', null);
+ const kPizzaCena = getKcalPizza();
  setBadge('kPrimoCena', kPC); setBadge('kSecondoCena', kSC); setBadge('kUovoCompC', kUCC);
  setBadge('kVerduraCena', kVC); setBadge('kFruttaCena', kFC);
- const totCena = kPC + kSC + kUCC + kVC + kFC;
+ const totCena = kPC + kSC + kUCC + kVC + kFC + kPizzaCena;
 
  // Olio
  const totOlio = olioCount * 90;
@@ -1555,7 +1567,7 @@ const IDS_SALVA = ['primoPranzo','qtaPrimoPranzo','secondoPranzo','qtaSecondoPra
  'uovoCompP','panePranzo','qtaPanePranzo','verduraPranzo','qtaVerduraPranzo','fruttaPranzo',
  'primoCena','qtaPrimoCena','secondoCena','qtaSecondoCena','uovoCompC',
  'verduraCena','qtaVerduraCena','fruttaCena',
- 'colBase','colBev','fruttaCol','spMattina','spPomeriggio','pastoVeloce','pranzoLiberoKcal','note'];
+ 'colBase','colBev','fruttaCol','spMattina','spPomeriggio','pastoVeloce','pranzoLiberoKcal','pizzaKcal','note'];
 
 function raccogliDati() {
  const d = {olio: olioCount};
@@ -1769,9 +1781,16 @@ function getKcalPastoVeloce() {
 }
 
 function aggiornaPranzoLiberoKcal() { ricalcola(); }
+function aggiornaPizzaKcal() { ricalcola(); }
 
 function getKcalPranzoLibero() {
  const sel = document.getElementById('pranzoLiberoKcal');
+ if (!sel || !sel.value) return 0;
+ return parseInt(sel.value) || 0;
+}
+
+function getKcalPizza() {
+ const sel = document.getElementById('pizzaKcal');
  if (!sel || !sel.value) return 0;
  return parseInt(sel.value) || 0;
 }
