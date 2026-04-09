@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dieta Dott. Pacella — Geremia Saltarelli</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+:root {
+ --green:#2d6a4f; --green-light:#40916c; --green-pale:#d8f3dc;
+ --cream:#fefae0; --warm:#f4f1de; --gold:#c9a84c; --red:#c1440e;
+ --text:#2c2c2c; --muted:#7a7a7a; --border:#e0d9c8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lato',sans-serif;background:var(--warm);color:var(--text);min-height:100vh;padding:14px;}
+.header{background:linear-gradient(135deg,var(--green),var(--green-light));color:white;border-radius:14px;padding:18px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 18px rgba(45,106,79,.3);}
+.header-title h1{font-family:'Playfair Display',serif;font-size:1.6rem;}
+.header-title p{font-size:.8rem;opacity:.85;margin-top:3px;}
+.header-info{text-align:right;font-size:.82rem;}
+.header-info .paziente{font-size:.95rem;font-weight:700;}
+.apple-icon{font-size:2.2rem;margin-right:14px;}
+.date-bar{background:white;border-radius:10px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border);}
+.date-bar label{font-weight:700;color:var(--green);font-size:.88rem;}
+.date-bar input[type="date"]{border:1.5px solid var(--border);border-radius:7px;padding:5px 10px;font-family:'Lato',sans-serif;font-size:.9rem;color:var(--text);background:var(--cream);}
+.giorno-label{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--green);font-weight:600;}
+.kcal-totale{margin-left:auto;background:var(--green);color:white;padding:7px 16px;border-radius:18px;font-weight:700;font-size:.9rem;}
+.card{background:white;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:14px;}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;border-bottom:2px solid var(--green-pale);padding-bottom:8px;}
+.card-icon{font-size:1.3rem;}
+.card-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--green);font-weight:600;}
+.card-kcal{margin-left:auto;font-size:.78rem;background:var(--green-pale);color:var(--green);padding:3px 9px;border-radius:9px;font-weight:700;}
+.consiglio-box{background:linear-gradient(135deg,#f0faf4,var(--green-pale));border:1.5px solid #b7e4c7;border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:.8rem;color:#1b4332;line-height:1.5;}
+.consiglio-box strong{display:block;margin-bottom:3px;color:var(--green);font-size:.82rem;}
+.sec-title{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;margin-top:10px;}
+.row-input{display:grid;grid-template-columns:1fr auto auto;gap:7px;margin-bottom:7px;align-items:center;}
+.row-input.fixed{grid-template-columns:1fr auto;}
+select,input[type="number"],input[type="text"]{border:1.5px solid var(--border);border-radius:7px;padding:6px 9px;font-family:'Lato',sans-serif;font-size:.82rem;background:var(--cream);color:var(--text);width:100%;}
+select:focus,input:focus{outline:none;border-color:var(--green-light);background:white;}
+.qty-unit{display:flex;gap:4px;align-items:center;}
+.qty-unit input{width:65px;}
+.qty-unit span{font-size:.78rem;color:var(--muted);white-space:nowrap;}
+.kcal-badge{font-size:.76rem;color:var(--gold);font-weight:700;white-space:nowrap;min-width:55px;text-align:right;}
+.snack-row{display:grid;grid-template-columns:1fr auto;gap:7px;margin-bottom:6px;align-items:center;}
+textarea{border:1.5px solid var(--border);border-radius:7px;padding:7px 9px;font-family:'Lato',sans-serif;font-size:.82rem;background:var(--cream);color:var(--text);width:100%;resize:none;margin-top:5px;}
+textarea:focus{outline:none;border-color:var(--green-light);}
+.btn{background:var(--green);color:white;border:none;border-radius:9px;padding:10px 18px;font-family:'Lato',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;width:100%;margin-top:7px;}
+.btn:hover{background:var(--green-light);}
+.btn-outline{background:white;color:var(--green);border:2px solid var(--green);}
+.btn-outline:hover{background:var(--green-pale);}
+.olio-bar{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;}
+.olio-cucchiaio{width:30px;height:30px;border-radius:50%;border:2px solid var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;background:white;user-select:none;transition:background .15s;}
+.olio-cucchiaio.attivo{background:var(--gold);border-color:var(--gold);}
+.sug-box{display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;font-size:.79rem;line-height:1.5;border:1.5px solid #ccc;}
+.uovo-comp-box{display:none;margin-bottom:8px;}
+/* Rotazione */
+.rot-panel{background:white;border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:14px;}
+.rot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.rot-card{border-radius:10px;padding:12px 12px;border:2px solid transparent;position:relative;display:flex;flex-direction:column;gap:4px;}
+.rot-card.ok{background:#d8f3dc;border-color:#40916c;}
+.rot-card.warn{background:#fff3cd;border-color:#c9a84c;}
+.rot-card.over{background:#fde8e0;border-color:#c1440e;}
+.rot-card.empty{background:#f4f1de;border-color:#e0d9c8;}
+.rot-left{display:flex;flex-direction:column;align-items:center;min-width:44px;}
+.rot-icon{font-size:1.6rem;}
+.rot-count{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;line-height:1;text-align:center;}
+.rot-count.ok{color:#2d6a4f;} .rot-count.warn{color:#b07d1a;} .rot-count.over{color:#c1440e;} .rot-count.empty{color:#aaa;}
+.rot-middle{display:flex;flex-direction:column;gap:3px;}
+.rot-name{font-size:.78rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px;}
+.rot-target{font-size:.7rem;color:var(--muted);}
+.rot-status{font-size:.72rem;font-weight:700;}
+.rot-status.ok{color:#2d6a4f;} .rot-status.warn{color:#b07d1a;} .rot-status.over{color:#c1440e;} .rot-status.empty{color:#aaa;}
+.rot-detail{font-size:.68rem;color:var(--muted);line-height:1.4;}
+.rot-suggerimento{font-size:.72rem;line-height:1.4;margin-top:4px;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,0.6);}
+.rot-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:40px;}
+.rot-rim{font-size:.7rem;font-weight:700;background:white;border-radius:7px;padding:2px 6px;color:var(--green);border:1px solid #b7e4c7;white-space:nowrap;}
+.rot-rim.over{color:var(--red);border-color:#f5b8a0;}
+.rot-legenda{font-size:.75rem;color:var(--muted);margin-top:9px;text-align:center;}
+/* Riepilogo */
+.riepilogo-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px;}
+.riepilogo-item{background:var(--cream);border-radius:9px;padding:9px 12px;text-align:center;}
+.riepilogo-item .label{font-size:.72rem;color:var(--muted);}
+.riepilogo-item .value{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--green);font-weight:600;}
+.riepilogo-total{grid-column:1/-1;background:var(--green);color:white;border-radius:9px;padding:11px 12px;text-align:center;}
+.riepilogo-total .label{font-size:.78rem;opacity:.85;}
+.riepilogo-total .value{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;}
+/* Storico */
+.storico-list{max-height:200px;overflow-y:auto;}
+.storico-item{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;border-radius:7px;margin-bottom:3px;background:var(--cream);font-size:.8rem;cursor:pointer;}
+.storico-item:hover{background:var(--green-pale);}
+.storico-item .data{font-weight:700;color:var(--green);}
+.storico-item .kcal{color:var(--gold);font-weight:700;}
+/* Grid 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#b7c9bc;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+ <div style="display:flex;align-items:center">
+ <div class="apple-icon">🍏</div>
+ <div class="header-title">
+ <h1>Diario Alimentare</h1>
+ <p>Prescrizione Dott. Prof. Antonio Pacella</p>
+ </div>
+ </div>
+ <div class="header-info">
+ <div class="paziente">Geremia Saltarelli</div>
+ <div>Prescrizione 24.11.2025</div>
+ </div>
+</div>
+
+<div class="date-bar">
+ <label>📅 Data:</label>
+ <input type="date" id="dataInput" onchange="cambiaData()">
+ <div class="giorno-label" id="giornoLabel"></div>
+ <div id="autoSaveIndicator" style="font-size:.72rem;color:var(--green);font-weight:700;opacity:0;transition:opacity 0.5s;margin-left:8px">✅ Salvato</div>
+ <div class="kcal-totale" id="kcalHeader">⚡ 0 kcal totali</div>
+</div>
+
+<!-- MEDIA SETTIMANALE -->
+<div class="card" id="mediaPanel" style="margin-bottom:14px;background:linear-gradient(135deg,#f8f4ff,#f0eaff);border:1.5px solid #c4a8f0">
+ <div class="card-header" style="border-bottom:2px solid #ddd0f7;padding-bottom:8px">
+ <span class="card-icon">📈</span>
+ <span class="card-title" style="color:#5a3d8a">Media Calorica Settimanale</span>
+ <span style="margin-left:auto;font-size:.75rem;color:var(--muted)" id="mediaSettimanaRange"></span>
+ </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+ <div style="background:white;border-radius:10px;padding:10px;text-align:center">
+ <div style="font-size:.72rem;color:var(--muted);margin-bottom:3px">🎯 Fabbisogno giornaliero</div>
+ <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#5a3d8a">2.289 kcal</div>
+ <div style="font-size:.68rem;color:var(--muted)">per mantenere il peso</div>
+ <div style="font-size:.68rem;color:var(--red);font-weight:700">1.800 kcal per dimagrire</div>
+ </div>
+ <div style="background:white;border-radius:10px;padding:10px;text-align:center">
+ <div style="font-size:.72rem;color:var(--muted);margin-bottom:3px">📊 Media questa settimana</div>
+ <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700" id="mediaKcal">— kcal</div>
+ <div style="font-size:.72rem;font-weight:700;margin-top:3px" id="mediaStatus">Nessun dato</div>
+ </div>
+ </div>
+ <!-- Barra giorni settimana -->
+ <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Calorie per giorno</div>
+ <div id="mediaGiorni" style="display:flex;flex-direction:column;gap:5px"></div>
+</div>
+
+<!-- 1. ROTAZIONE SECONDI -->
+<div class="rot-panel">
+ <div class="card-header">
+  <span class="card-icon">🔄</span>
+  <span class="card-title">Rotazione Secondi — Settimana corrente</span>
+  <span style="margin-left:auto;font-size:.75rem;color:var(--muted)" id="settimanaRange"></span>
+ </div>
+ <!-- SUGGERIMENTO INTELLIGENTE GIORNALIERO -->
+ <div id="suggerimentoOggi" style="display:none;margin:10px 0;border-radius:10px;padding:12px 14px;background:linear-gradient(135deg,#f0faf4,#d8f3dc);border:1.5px solid #40916c">
+  <div style="font-size:.76rem;font-weight:700;color:#2d6a4f;margin-bottom:6px">🎯 Suggerimento personalizzato per oggi</div>
+  <div id="suggerimentoOggiContent" style="font-size:.78rem;color:#1b4332;line-height:1.6"></div>
+ </div>
+ <div class="rot-grid" id="rotazioneGrid"></div>
+ <div class="rot-legenda">🟢 Nei limiti &nbsp;|&nbsp; 🟡 Attenzione &nbsp;|&nbsp; 🔴 Superato &nbsp;|&nbsp; ⬜ Nessun dato</div>
+</div>
+
+<!-- 2. COLAZIONE -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">☕</span>
+ <span class="card-title">COLAZIONE</span>
+ <span class="card-kcal" id="kcalColazione">0 kcal</span>
+ </div>
+
+ <div class="sec-title">Carboidrato base</div>
+ <div class="snack-row">
+ <select id="colBase" onchange="ricalcola()">
+ <option value="">— scegli —</option>
+ <optgroup label="Dolci e cereali — porzione fissa">
+ <option value="ciambellone|171">🍰 Fetta ciambellone (45g → 171 kcal)</option>
+ <option value="biscotti|172">🍪 Biscotti secchi/frollini (4 pz ~40g → 172 kcal)</option>
+ <option value="biscotto_cas|171">🍪 Biscotto casareccio (1 pz ~45g → 171 kcal)</option>
+ <option value="cereali|185">🥣 Cereali/Muesli 4 cucchiai (~50g → 185 kcal)</option>
+ <option value="brioche|150">🥐 Brioche piccola (~50g → 150 kcal)</option>
+ </optgroup>
+ <optgroup label="Pane 50g + accompagnamento — porzione fissa">
+ <option value="pane_marmel|183">🍓 Pane + marmellata (50g+30g → 183 kcal)</option>
+ <option value="pane_miele|183">🍯 Pane + miele (50g+2 cucchiaini → 183 kcal)</option>
+ <option value="pane_arachidi|246">🥜 Pane + burro d'arachidi (50g+2 cucch → 246 kcal)</option>
+ <option value="fette_bisc|117">🍞 Fette biscottate (2 pz ~30g → 117 kcal)</option>
+ <option value="fette_bisc_miele|152">🍯 Fette biscottate + miele (2 pz+2 cucch → 152 kcal)</option>
+ </optgroup>
+ <optgroup label="Panino 60g con interno — porzione fissa">
+ <option value="panino_frittata|218">🥚 Panino + frittata 1 uovo → 218 kcal</option>
+ <option value="panino_salumi|233">🥩 Panino + 30g salumi → 233 kcal</option>
+ <option value="panino_ricotta|208">🧀 Panino + 50g ricotta → 208 kcal</option>
+ <option value="panino_pollo|248">🍗 Panino + 100g petto pollo + rucola → 248 kcal</option>
+ <option value="panino_salmone|228">🐟 Panino + 50g salmone affumicato → 228 kcal</option>
+ <option value="panino_tonno|218">🐟 Panino + 1 scatoletta tonno → 218 kcal</option>
+ <option value="panino_hummus|213">🫘 Panino + hummus di ceci → 213 kcal</option>
+ </optgroup>
+ </select>
+ <div class="kcal-badge" id="kColBase">— kcal</div>
+ </div>
+
+ <div class="sec-title">Bevanda — porzione fissa</div>
+ <div class="snack-row">
+ <select id="colBev" onchange="ricalcola()">
+ <option value="">— scegli —</option>
+ <optgroup label="Latte animale">
+ <option value="latte_intero|130">🥛 Latte intero (200ml → 130 kcal)</option>
+ <option value="cappuccino|120">☕ Cappuccino → 120 kcal</option>
+ <option value="latte_scremato|70">🥛 Latte parz. scremato / senza lattosio (200ml → 70 kcal)</option>
+ <option value="latte_capra|122">🐐 Latte di capra (200ml → 122 kcal)</option>
+ <option value="latte_asina|88">🫏 Latte d'asina (200ml → 88 kcal)</option>
+ </optgroup>
+ <optgroup label="Bevande vegetali">
+ <option value="latte_soia|108">🌱 Latte di soia (200ml → 108 kcal)</option>
+ <option value="latte_avena|90">🌾 Latte di avena (200ml → 90 kcal)</option>
+ <option value="latte_mandorla|48">🌰 Latte di mandorla (200ml → 48 kcal)</option>
+ <option value="latte_cocco|40">🥥 Latte di cocco (200ml → 40 kcal)</option>
+ <option value="latte_orzo|74">🌾 Orzo (200ml → 74 kcal)</option>
+ </optgroup>
+ <optgroup label="Yogurt e fermentati">
+ <option value="yogurt_intero|73">🥛 Yogurt intero naturale (125g → 73 kcal)</option>
+ <option value="yogurt_frutta|98">🍓 Yogurt alla frutta (125g → 98 kcal)</option>
+ <option value="yogurt_bere|90">🥤 Yogurt da bere (150ml → 90 kcal)</option>
+ <option value="kefir|87">🥛 Kefir (150g → 87 kcal)</option>
+ <option value="skyr|90">🥛 Skyr (150g → 90 kcal)</option>
+ </optgroup>
+ <optgroup label="Altro">
+ <option value="centrifuga|80">🥤 Centrifuga frutta+verdura → 80 kcal</option>
+ </optgroup>
+ </select>
+ <div class="kcal-badge" id="kColBev">— kcal</div>
+ </div>
+
+ <div class="sec-title">Frutta (1 porzione come da prescrizione)</div>
+ <div class="snack-row">
+ <select id="fruttaCol" onchange="ricalcola()">
+ <option value="">— nessuna —</option>
+ <option value="mela|78">🍎 Mela / Pera (1 frutto ~150g → 78 kcal)</option>
+ <option value="banana|89">🍌 Banana (1 frutto ~100g → 89 kcal)</option>
+ <option value="arancia|70">🍊 Arancia / Agrumi (1 frutto ~150g → 70 kcal)</option>
+ <option value="fragole|32">🍓 Fragole (10 pz ~100g → 32 kcal)</option>
+ <option value="kiwi|73">🥝 Kiwi (2 frutti ~120g → 73 kcal)</option>
+ <option value="pesche|59">🍑 Pesca / Pesca noce (1 frutto ~150g → 59 kcal)</option>
+ <option value="prugne|46">🟣 Prugne / Nespole (2 frutti ~100g → 46 kcal)</option>
+ <option value="melone|85">🍈 Melone (2 fette ~250g → 85 kcal)</option>
+ </select>
+ <div class="kcal-badge" id="kFruttaCol">— kcal</div>
+ </div>
+</div>
+
+<!-- 3. SPUNTINO MATTINA -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">🍎</span>
+ <span class="card-title">SPUNTINO MATTINA</span>
+ <span class="card-kcal" id="kcalSpMattina">0 kcal</span>
+ </div>
+ <div class="snack-row">
+ <select id="spMattina" onchange="ricalcola()">
+ <option value="">— nessuno —</option>
+ <option value="frutta_sp|70">🍎 Frutta (1 porzione → ~70 kcal)</option>
+ <option value="mousse_frutta|60">🍓 Mousse di frutta / Frullà (1 confezione 100g → 60 kcal)</option>
+ <option value="yogurt_sp|73">🥛 Yogurt intero (125g → 73 kcal)</option>
+ <option value="pavesini|117">🍪 Pavesini (1 pacchetto ~30g → 117 kcal)</option>
+ <option value="oro_ciok|90">🍫 Oro Ciok (1 confezione da 2 pezzi → 90 kcal)</option>
+ <option value="patatine|134">🥔 Patatine in busta (25g → 134 kcal)</option>
+ <option value="frutta_secca|179">🌰 Frutta secca (30g → 179 kcal)</option>
+ <option value="pane_olio_sp|163">🫒 Pane + olio (50g+2 cucch → 163 kcal)</option>
+ <option value="pane_ricotta_sp|166">🧀 Pane + ricotta (50g pane+20g → 166 kcal)</option>
+ <option value="pane_marmell_sp|153">🍓 Pane + marmellata (50g+20g → 153 kcal)</option>
+ <option value="pane_ciocco_sp|198">🍫 Pane + cioccolato spalmabile (50g+15g → 198 kcal)</option>
+ <option value="frullato_latte|170">🥤 Frullato latte + frutto (200ml → 170 kcal)</option>
+ <option value="gelato|125">🍦 Gelato 1 gusto (60g → 125 kcal — max 2×/sett.)</option>
+ <option value="dolce_cas|185">🍰 Dolce casalingo / crostata (50g → 185 kcal)</option>
+ <option value="pizza_bianca_sp|135">🍕 Pizza bianca (50g → 135 kcal)</option>
+ </select>
+ <div class="kcal-badge" id="kSpMattina">— kcal</div>
+ </div>
+</div>
+
+<!-- 4. PRANZO -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">🍝</span>
+ <span class="card-title">PRANZO</span>
+ <span class="card-kcal" id="kcalPranzo">0 kcal</span>
+ </div>
+ <div id="consiglioPranzo" class="consiglio-box"></div>
+ <div id="suggerimentoRotazionePranzo" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#fff9e6,#fff3cd);border:1.5px solid #c9a84c;font-size:.78rem;color:#7d5a00;line-height:1.5"></div>
+
+ <div class="sec-title">Primo piatto — quantità modificabile</div>
+ <div class="row-input">
+ <select id="primoPranzo" onchange="ricalcola()">
+ <option value="">— scegli il primo —</option>
+ <optgroup label="Pasta e cereali (default 150g crudo)">
+ <option value="pasta|352">🍝 Pasta (150g crudo → ~528 kcal cotto)</option>
+ <option value="riso|350">🍚 Riso (150g crudo)</option>
+ <option value="farro|340">🌾 Farro in chicco (150g)</option>
+ <option value="orzo|352">🌾 Orzo in chicco (150g)</option>
+ <option value="quinoa|368">🌾 Quinoa (150g)</option>
+ <option value="amaranto|371">🌾 Amaranto / Miglio (150g)</option>
+ <option value="grano_saraceno|343">🌾 Grano saraceno / Kamut (150g)</option>
+ <option value="pasta_legumi_p|340">🫘 Pasta di legumi (150g)</option>
+ </optgroup>
+ <optgroup label="Alternativa: Pane OPPURE Patate (non entrambi)">
+ <option value="pane_pranzo|260">🍞 Pane (50g → 130 kcal)</option>
+ <option value="pane_sabato|260">🍞 Pane sabato (100g → 260 kcal)</option>
+ <option value="patate_pranzo|77">🥔 Patate crude sbucciate (200g → 154 kcal)</option>
+ <option value="patate_sabato|77">🥔 Patate sabato (400g → 308 kcal)</option>
+ </optgroup>
+ </select>
+ <div class="qty-unit">
+ <input type="number" id="qtaPrimoPranzo" value="150" min="0" max="400" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kPrimoPranzo">— kcal</div>
+ </div>
+
+ <div class="sec-title">Secondo piatto</div>
+ <div class="row-input">
+ <select id="secondoPranzo" onchange="aggiornaUovoComp('P'); aggiornaSuggerimenti(); ricalcola()">
+ <option value="">— scegli il secondo —</option>
+ <optgroup label="🥩 Carne (200g) — kcal/100g">
+ <option value="pollo_petto|107">Petto pollo / Tacchino (200g → 214 kcal)</option>
+ <option value="vitellone|147">Vitellone magro fesa/girello (200g → 294 kcal)</option>
+ <option value="coniglio|122">Coniglio (200g → 244 kcal)</option>
+ <option value="maiale_magro|143">Maiale magro (200g → 286 kcal)</option>
+ <option value="hamburger|200">Hamburger vitello/pollo (200g → 400 kcal)</option>
+ <option value="pollo_intero|170">Pollo intero senza pelle (200g → 340 kcal)</option>
+ <option value="tacchino_intero|170">Tacchino intero senza pelle (200g → 340 kcal)</option>
+ <option value="trippa|90">Trippa sgrassata (200g → 180 kcal)</option>
+ <option value="agnello|206">Agnello/Castrato/Pecora (100g → 206 kcal)</option>
+ <option value="cacciagione|150">Cacciagione / Selvaggina (100g → 150 kcal)</option>
+ <option value="fegato|140">Fegato / Cuore / Cervello bovino o suino (100g → 140 kcal)</option>
+ <option value="milza|105">Milza / Rognone (100g → 105 kcal)</option>
+ <option value="pancetta|337">Pancetta affumicata (50g → 169 kcal)</option>
+ <option value="salsiccia|290">Salsiccia (1 pz ~50g → 145 kcal)</option>
+ </optgroup>
+ <optgroup label="🐟 Pesce (200g) — kcal/100g">
+ <option value="orata|105">Orata (200g → 210 kcal)</option>
+ <option value="spigola|97">Spigola (200g → 194 kcal)</option>
+ <option value="merluzzo|77">Merluzzo / Nasello (200g → 154 kcal)</option>
+ <option value="trota|104">Trota (200g → 208 kcal)</option>
+ <option value="cernia|92">Cernia (200g → 184 kcal)</option>
+ <option value="dentice|96">Dentice (200g → 192 kcal)</option>
+ <option value="rombo|86">Rombo (200g → 172 kcal)</option>
+ <option value="sogliola|72">Sogliola (200g → 144 kcal)</option>
+ <option value="palombo|100">Palombo (200g → 200 kcal)</option>
+ <option value="pesce_spada|109">Pesce spada (200g → 218 kcal)</option>
+ <option value="tonno_fresco|158">Tonno fresco (200g → 316 kcal)</option>
+ <option value="salmone|208">Salmone fresco (200g → 416 kcal)</option>
+ <option value="polpo|57">Polpo / Seppia / Calamari (200g → 114 kcal)</option>
+ <option value="gamberi|71">Gamberi / Mazzancolle (200g → 142 kcal)</option>
+ <option value="cozze|84">Cozze / Vongole / Telline (200g → 168 kcal)</option>
+ <option value="sgombro|170">Sgombro / Maccarello (200g → 340 kcal)</option>
+ <option value="sardine|129">Sarde / Acciughe (200g → 258 kcal)</option>
+ <option value="tonno_scatola|103">Tonno in scatola al naturale (110g → 113 kcal)</option>
+ <option value="salmone_affumicato|172">Salmone affumicato (100g → 172 kcal)</option>
+ </optgroup>
+ <optgroup label="🔄 Alternativa al pesce (come da prescrizione Dott. Pacella)">
+ <option value="ceci|246">🫘 Ceci — alternativa al pesce (150g freschi → 246 kcal)</option>
+ <option value="fagioli|191">🫘 Fagioli — alternativa al pesce (150g freschi → 191 kcal)</option>
+ <option value="lenticchie|174">🫘 Lenticchie — alternativa al pesce (150g fresche → 174 kcal)</option>
+ <option value="piselli|107">🫘 Piselli — alternativa al pesce (150g freschi → 107 kcal)</option>
+ <option value="lupini|174">🫘 Lupini — alternativa al pesce (150g → 174 kcal)</option>
+ <option value="fave|108">🫘 Fave — alternativa al pesce (150g fresche → 108 kcal)</option>
+ <option value="hummus|354">🫘 Hummus di ceci — alternativa al pesce (150g → 354 kcal)</option>
+ <option value="uova2_alt_pesce|144">🥚 2 Uova — alternativa al pesce (→ 144 kcal)</option>
+ </optgroup>
+ <optgroup label="🥚 Uova — porzione fissa">
+ <option value="uova2|144">2 Uova (frittata / sodo / coque → 144 kcal)</option>
+ <option value="uova1|72">1 Uovo (→ 72 kcal)</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi freschi (150g) — kcal totali">
+ <option value="ricotta|219">Ricotta mucca/pecora/bufala (150g → 219 kcal)</option>
+ <option value="fiordilatte|272">Fior di latte / Mozzarella (150g → 272 kcal)</option>
+ <option value="mozzarella_bufala|285">Mozzarella di bufala (150g → 285 kcal)</option>
+ <option value="fiocchi_latte|165">Fiocchi di latte (150g → 165 kcal)</option>
+ <option value="caprino_fresco|240">Caprino fresco (150g → 240 kcal)</option>
+ <option value="primo_sale|300">Primo sale / Giuncata (150g → 300 kcal)</option>
+ <option value="tofu|120">Tofu (150g → 120 kcal)</option>
+ <option value="scamorza|345">Scamorza / Scamorza affumicata (150g → 345 kcal)</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi semistagionati (100g) — kcal totali">
+ <option value="philadelphia|253">Philadelphia (100g → 253 kcal)</option>
+ <option value="stracchino|129">Stracchino / Crescenza (100g → 129 kcal)</option>
+ <option value="feta|264">Feta (100g → 264 kcal)</option>
+ <option value="robiola|280">Robiola (100g → 280 kcal)</option>
+ <option value="brie|319">Brie / Camembert (100g → 319 kcal)</option>
+ <option value="gorgonzola|321">Gorgonzola (100g → 321 kcal)</option>
+ <option value="taleggio|315">Taleggio (100g → 315 kcal)</option>
+ <option value="fontina|343">Fontina / Edam (100g → 343 kcal)</option>
+ <option value="provola|270">Provola affumicata (100g → 270 kcal)</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi stagionati (100g) — kcal totali">
+ <option value="parmigiano|392">Parmigiano / Grana (100g → 392 kcal)</option>
+ <option value="provolone|371">Provolone dolce/piccante (100g → 371 kcal)</option>
+ <option value="pecorino_stag|419">Pecorino stagionato (100g → 419 kcal)</option>
+ <option value="caciocavallo|391">Caciocavallo (100g → 391 kcal)</option>
+ <option value="groviera|380">Groviera / Emmenthal (100g → 380 kcal)</option>
+ <option value="asiago|350">Asiago / Montasio (100g → 350 kcal)</option>
+ <option value="cheddar|400">Cheddar (100g → 400 kcal)</option>
+ </optgroup>
+ <optgroup label="🫘 Legumi — kcal totali porzione">
+ <option value="ceci_l|246">Ceci (150g freschi / 50g secchi → 246 kcal)</option>
+ <option value="fagioli_l|180">Fagioli (150g freschi → 180 kcal)</option>
+ <option value="lenticchie_l|174">Lenticchie (150g fresche → 174 kcal)</option>
+ <option value="piselli_l|107">Piselli (150g freschi → 107 kcal)</option>
+ <option value="lupini_l|116">Lupini (150g → 116 kcal)</option>
+ <option value="fave_l|108">Fave (150g fresche → 108 kcal)</option>
+ <option value="hummus|354">Hummus di ceci (150g → 354 kcal)</option>
+ <option value="burger_soia|180">Burger di soia / legumi (1 burger → 180 kcal)</option>
+ </optgroup>
+ <optgroup label="🥩 Affettati (100g) — kcal totali">
+ <option value="bresaola|98">Bresaola (100g → 98 kcal)</option>
+ <option value="tacchino_arr|107">Tacchino arrosto / Fesa (100g → 107 kcal)</option>
+ <option value="prosciutto_cotto|145">Prosciutto cotto (100g → 145 kcal)</option>
+ <option value="prosciutto_crudo|196">Prosciutto crudo (100g → 196 kcal)</option>
+ <option value="speck|278">Speck (100g → 278 kcal)</option>
+ <option value="mortadella|311">Mortadella (100g → 311 kcal)</option>
+ <option value="salame|336">Salame (100g → 336 kcal)</option>
+ </optgroup>
+ </select>
+ <div class="qty-unit" id="qtaSecPranzoWrap">
+ <input type="number" id="qtaSecondoPranzo" value="200" min="0" max="500" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kSecondoPranzo">— kcal</div>
+ </div>
+
+ <!-- Uovo complemento legumi pranzo -->
+ <div id="uovoCompPBox" class="uovo-comp-box">
+ <div class="sec-title">🥚 Uovo complemento (come da prescrizione con i legumi)</div>
+ <div class="snack-row">
+ <select id="uovoCompP" onchange="ricalcola()">
+ <option value="">— nessuno —</option>
+ <option value="uovo_c1|72">1 Uovo sodo / coque / frittata → 72 kcal</option>
+ <option value="uovo_c2|144">2 Uova → 144 kcal</option>
+ </select>
+ <div class="kcal-badge" id="kUovoCompP">— kcal</div>
+ </div>
+ </div>
+
+ <!-- Suggerimento cena -->
+ <div id="sugCena" class="sug-box"></div>
+
+ <div class="sec-title">Pane o Patate aggiuntivi</div>
+ <div class="row-input">
+ <select id="panePranzo" onchange="ricalcola()">
+ <option value="">— nessuno —</option>
+ <option value="pane_acc|260">🍞 Pane (default 50g → 130 kcal)</option>
+ <option value="pane_sab|260">🍞 Pane sabato (100g → 260 kcal)</option>
+ <option value="patate_acc|77">🥔 Patate lesse (default 200g → 154 kcal)</option>
+ <option value="patate_sab|77">🥔 Patate sabato (400g → 308 kcal)</option>
+ </select>
+ <div class="qty-unit">
+ <input type="number" id="qtaPanePranzo" value="50" min="0" max="400" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kPanePranzo">— kcal</div>
+ </div>
+
+ <div class="sec-title">Verdure</div>
+ <div class="row-input">
+ <select id="verduraPranzo" onchange="ricalcola()">
+ <option value="">— nessuna —</option>
+ <option value="insalata|15">Insalata mista cruda</option>
+ <option value="pomodori|18">Pomodori</option>
+ <option value="zucchine|17">Zucchine</option>
+ <option value="spinaci|23">Spinaci (cotti)</option>
+ <option value="broccoli|34">Broccoli (cotti)</option>
+ <option value="carote|41">Carote</option>
+ <option value="finocchi|31">Finocchi</option>
+ <option value="fagiolini|31">Fagiolini (cotti)</option>
+ <option value="peperoni|26">Peperoni</option>
+ <option value="melanzane|24">Melanzane</option>
+ <option value="cavolfiore|25">Cavolfiore</option>
+ <option value="carciofi|22">Carciofi</option>
+ <option value="funghi|22">Funghi</option>
+ <option value="sedano|16">Sedano</option>
+ <option value="cetrioli|15">Cetrioli</option>
+ <option value="radicchio|23">Radicchio</option>
+ <option value="asparagi|20">Asparagi</option>
+ <option value="cipolla|40">Cipolla</option>
+ <option value="bieta|20">Bieta / Cicoria</option>
+ </select>
+ <div class="qty-unit">
+ <input type="number" id="qtaVerduraPranzo" value="150" min="0" max="500" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kVerduraPranzo">— kcal</div>
+ </div>
+
+ <div class="sec-title">Frutta (1 porzione)</div>
+ <div class="snack-row">
+ <select id="fruttaPranzo" onchange="ricalcola()">
+ <option value="">— nessuna —</option>
+ <option value="mela|78">🍎 Mela / Pera (1 frutto ~150g → 78 kcal)</option>
+ <option value="arancia|70">🍊 Arancia / Agrumi (~150g → 70 kcal)</option>
+ <option value="banana|89">🍌 Banana (~100g → 89 kcal)</option>
+ <option value="fragole|32">🍓 Fragole (10 pz ~100g → 32 kcal)</option>
+ <option value="uva|60">🍇 Uva (15 chicchi ~90g → 60 kcal)</option>
+ <option value="kiwi|73">🥝 Kiwi (2 frutti ~120g → 73 kcal)</option>
+ <option value="pesche|59">🍑 Pesca / Pesca noce (~150g → 59 kcal)</option>
+ <option value="melone|85">🍈 Melone (2 fette ~250g → 85 kcal)</option>
+ <option value="cocomero|90">🍉 Cocomero (1 fetta ~300g → 90 kcal)</option>
+ <option value="ananas|85">🍍 Ananas (2 fette ~250g → 85 kcal)</option>
+ <option value="prugne|46">🟣 Prugne / Nespole (2 pz → 46 kcal)</option>
+ <option value="albicocche|48">🟡 Albicocche (4 pz ~120g → 48 kcal)</option>
+ <option value="ciliegie|60">🍒 Ciliegie (15 pz ~90g → 60 kcal)</option>
+ <option value="mirtilli|32">🫐 Mirtilli / Lamponi / More (~100g → 32 kcal)</option>
+ <option value="fichi|74">🫐 Fichi (2 pz ~100g → 74 kcal)</option>
+ <option value="kaki|70">🟠 Kaki / Melagrana (~130g → 70 kcal)</option>
+ <option value="mandorle|120">🌰 Mandorle (20 pz ~20g → 120 kcal)</option>
+ <option value="noci|130">🌰 Noci (5 pz ~20g → 130 kcal)</option>
+ <option value="pistacchi|145">🌰 Pistacchi (25 pz ~25g → 145 kcal)</option>
+ <option value="nocciole|130">🌰 Nocciole (25 pz ~25g → 130 kcal)</option>
+ <option value="castagne|130">🌰 Castagne (5 pz ~50g → 130 kcal)</option>
+ <option value="frutta_esotica|80">🥭 Frutta esotica Avocado/Papaya (50g → 80 kcal)</option>
+ </select>
+ <div class="kcal-badge" id="kFruttaPranzo">— kcal</div>
+ </div>
+</div>
+
+<!-- 5. SPUNTINO POMERIGGIO -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">🍊</span>
+ <span class="card-title">SPUNTINO POMERIGGIO</span>
+ <span class="card-kcal" id="kcalSpPomeriggio">0 kcal</span>
+ </div>
+ <div class="snack-row">
+ <select id="spPomeriggio" onchange="ricalcola()">
+ <option value="">— nessuno —</option>
+ <option value="frutta_sp|70">🍎 Frutta (1 porzione → ~70 kcal)</option>
+ <option value="mousse_frutta|60">🍓 Mousse di frutta / Frullà (1 confezione 100g → 60 kcal)</option>
+ <option value="yogurt_sp|73">🥛 Yogurt intero (125g → 73 kcal)</option>
+ <option value="pavesini|117">🍪 Pavesini (1 pacchetto ~30g → 117 kcal)</option>
+ <option value="oro_ciok|90">🍫 Oro Ciok (1 confezione da 2 pezzi → 90 kcal)</option>
+ <option value="patatine|134">🥔 Patatine in busta (25g → 134 kcal)</option>
+ <option value="frutta_secca|179">🌰 Frutta secca (30g → 179 kcal)</option>
+ <option value="pane_olio_sp|163">🫒 Pane + olio (50g+2 cucch → 163 kcal)</option>
+ <option value="pane_ricotta_sp|166">🧀 Pane + ricotta (50g+20g → 166 kcal)</option>
+ <option value="pane_marmell_sp|153">🍓 Pane + marmellata (50g+20g → 153 kcal)</option>
+ <option value="pane_ciocco_sp|198">🍫 Pane + cioccolato spalmabile (50g+15g → 198 kcal)</option>
+ <option value="frullato_latte|170">🥤 Frullato latte + frutto (200ml → 170 kcal)</option>
+ <option value="gelato|125">🍦 Gelato 1 gusto (60g → 125 kcal — max 2×/sett.)</option>
+ <option value="dolce_cas|185">🍰 Dolce casalingo / crostata (50g → 185 kcal)</option>
+ <option value="pizza_bianca_sp|135">🍕 Pizza bianca (50g → 135 kcal)</option>
+ </select>
+ <div class="kcal-badge" id="kSpPomeriggio">— kcal</div>
+ </div>
+</div>
+
+<!-- 6. CENA -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">🍲</span>
+ <span class="card-title">CENA</span>
+ <span class="card-kcal" id="kcalCena">0 kcal</span>
+ </div>
+ <div id="consiglioCena" class="consiglio-box"></div>
+ <div id="suggerimentoRotazioneCena" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#fff9e6,#fff3cd);border:1.5px solid #c9a84c;font-size:.78rem;color:#7d5a00;line-height:1.5"></div>
+
+ <div class="sec-title">Primo piatto — quantità modificabile</div>
+ <div class="row-input">
+ <select id="primoCena" onchange="ricalcola()">
+ <option value="">— scegli il primo —</option>
+ <optgroup label="Pasta e cereali (default 100g crudo)">
+ <option value="pasta_c|352">🍝 Pasta (100g crudo → 352 kcal)</option>
+ <option value="riso_c|350">🍚 Riso (100g)</option>
+ <option value="farro_c|340">🌾 Farro in chicco (100g)</option>
+ <option value="orzo_c|352">🌾 Orzo in chicco (100g)</option>
+ <option value="quinoa_c|368">🌾 Quinoa (100g)</option>
+ <option value="amaranto_c|371">🌾 Amaranto / Miglio (100g)</option>
+ <option value="grano_sar_c|343">🌾 Grano saraceno / Kamut (100g)</option>
+ <option value="pasta_leg_c|340">🫘 Pasta di legumi (60g)</option>
+ </optgroup>
+ <optgroup label="Alternativa pane (default 120g)">
+ <option value="pane_cena|260">🍞 Pane (120g → 312 kcal)</option>
+ <option value="gallette_c|388">🍘 Gallette cereali (12 gallette ~120g)</option>
+ <option value="pane150_c|260">🍞 Pane (150g → 390 kcal)</option>
+ </optgroup>
+ <optgroup label="Alternativa patate (porzione fissa)">
+ <option value="patate400_c|470">🥔 Patate 400g + pane 50g → 470 kcal</option>
+ </optgroup>
+ </select>
+ <div class="qty-unit" id="qtaPrimoCenaWrap">
+ <input type="number" id="qtaPrimoCena" value="100" min="0" max="400" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kPrimoCena">— kcal</div>
+ </div>
+
+ <div class="sec-title">Secondo piatto</div>
+ <div class="row-input">
+ <select id="secondoCena" onchange="aggiornaUovoComp('C'); aggiornaSuggerimenti(); ricalcola()">
+ <option value="">— scegli il secondo —</option>
+ <optgroup label="🥩 Carne (200g) — kcal/100g">
+ <option value="pollo_petto|107">Petto pollo / Tacchino (200g → 214 kcal)</option>
+ <option value="vitellone|147">Vitellone magro (200g → 294 kcal)</option>
+ <option value="coniglio|122">Coniglio (200g → 244 kcal)</option>
+ <option value="hamburger|200">Hamburger vitello/pollo (200g → 400 kcal)</option>
+ <option value="maiale_magro|143">Maiale magro (200g → 286 kcal)</option>
+ <option value="pollo_intero|170">Pollo intero senza pelle (200g → 340 kcal)</option>
+ <option value="tacchino_intero|170">Tacchino intero senza pelle (200g → 340 kcal)</option>
+ <option value="trippa|90">Trippa sgrassata (200g → 180 kcal)</option>
+ <option value="agnello|206">Agnello/Castrato/Pecora (100g → 206 kcal)</option>
+ <option value="cacciagione|150">Cacciagione / Selvaggina (100g → 150 kcal)</option>
+ <option value="fegato|140">Fegato / Cuore bovino o suino (100g → 140 kcal)</option>
+ <option value="cervello|140">Cervello bovino / suino (100g → 140 kcal)</option>
+ <option value="milza|105">Milza / Rognone (100g → 105 kcal)</option>
+ <option value="pancetta|337">Pancetta affumicata (50g → 169 kcal)</option>
+ <option value="salsiccia|290">Salsiccia (1 pz ~50g → 145 kcal)</option>
+ </optgroup>
+ <optgroup label="🐟 Pesce (200g) — kcal/100g">
+ <option value="orata|105">Orata (200g → 210 kcal)</option>
+ <option value="spigola|97">Spigola (200g → 194 kcal)</option>
+ <option value="merluzzo|77">Merluzzo / Nasello (200g → 154 kcal)</option>
+ <option value="trota|104">Trota (200g → 208 kcal)</option>
+ <option value="cernia|92">Cernia (200g → 184 kcal)</option>
+ <option value="dentice|96">Dentice (200g → 192 kcal)</option>
+ <option value="rombo|86">Rombo (200g → 172 kcal)</option>
+ <option value="sogliola|72">Sogliola (200g → 144 kcal)</option>
+ <option value="palombo|100">Palombo (200g → 200 kcal)</option>
+ <option value="pesce_spada|109">Pesce spada (200g → 218 kcal)</option>
+ <option value="tonno_fresco|158">Tonno fresco (200g → 316 kcal)</option>
+ <option value="salmone|208">Salmone fresco (200g → 416 kcal)</option>
+ <option value="polpo|57">Polpo / Seppia / Calamari (200g → 114 kcal)</option>
+ <option value="gamberi|71">Gamberi (200g → 142 kcal)</option>
+ <option value="cozze|84">Cozze / Vongole (200g → 168 kcal)</option>
+ <option value="sgombro|170">Sgombro (200g → 340 kcal)</option>
+ <option value="sardine|129">Sarde / Acciughe (200g → 258 kcal)</option>
+ <option value="tonno_scatola|103">Tonno in scatola (110g → 113 kcal)</option>
+ <option value="salmone_affumicato|172">Salmone affumicato (100g → 172 kcal)</option>
+ </optgroup>
+ <optgroup label="🔄 Alternativa al pesce (come da prescrizione Dott. Pacella)">
+ <option value="ceci|246">🫘 Ceci — alternativa al pesce (150g freschi → 246 kcal)</option>
+ <option value="fagioli|191">🫘 Fagioli — alternativa al pesce (150g freschi → 191 kcal)</option>
+ <option value="lenticchie|174">🫘 Lenticchie — alternativa al pesce (150g fresche → 174 kcal)</option>
+ <option value="piselli|107">🫘 Piselli — alternativa al pesce (150g freschi → 107 kcal)</option>
+ <option value="lupini|174">🫘 Lupini — alternativa al pesce (150g → 174 kcal)</option>
+ <option value="fave|108">🫘 Fave — alternativa al pesce (150g fresche → 108 kcal)</option>
+ <option value="hummus|354">🫘 Hummus di ceci — alternativa al pesce (150g → 354 kcal)</option>
+ <option value="uova2_alt_pesce|144">🥚 2 Uova — alternativa al pesce (→ 144 kcal)</option>
+ </optgroup>
+ <optgroup label="🥚 Uova — porzione fissa">
+ <option value="uova2|144">2 Uova → 144 kcal</option>
+ <option value="uova1|72">1 Uovo (complemento) → 72 kcal</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi freschi (150g) — kcal totali">
+ <option value="ricotta|219">Ricotta (150g → 219 kcal)</option>
+ <option value="fiordilatte|272">Fior di latte / Mozzarella (150g → 272 kcal)</option>
+ <option value="mozzarella_bufala|285">Mozzarella di bufala (150g → 285 kcal)</option>
+ <option value="fiocchi_latte|165">Fiocchi di latte (150g → 165 kcal)</option>
+ <option value="caprino_fresco|240">Caprino fresco (150g → 240 kcal)</option>
+ <option value="primo_sale|300">Primo sale / Giuncata (150g → 300 kcal)</option>
+ <option value="tofu|120">Tofu (150g → 120 kcal)</option>
+ <option value="scamorza|345">Scamorza / Scamorza affumicata (150g → 345 kcal)</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi semistagionati (100g) — kcal totali">
+ <option value="philadelphia|253">Philadelphia (100g → 253 kcal)</option>
+ <option value="stracchino|129">Stracchino / Crescenza (100g → 129 kcal)</option>
+ <option value="feta|264">Feta (100g → 264 kcal)</option>
+ <option value="robiola|280">Robiola (100g → 280 kcal)</option>
+ <option value="brie|319">Brie / Camembert (100g → 319 kcal)</option>
+ <option value="gorgonzola|321">Gorgonzola (100g → 321 kcal)</option>
+ <option value="taleggio|315">Taleggio (100g → 315 kcal)</option>
+ <option value="fontina|343">Fontina / Edam (100g → 343 kcal)</option>
+ <option value="provola|270">Provola affumicata (100g → 270 kcal)</option>
+ </optgroup>
+ <optgroup label="🧀 Formaggi stagionati (100g) — kcal totali">
+ <option value="parmigiano|392">Parmigiano / Grana (100g → 392 kcal)</option>
+ <option value="provolone|371">Provolone (100g → 371 kcal)</option>
+ <option value="pecorino_stag|419">Pecorino stagionato (100g → 419 kcal)</option>
+ <option value="caciocavallo|391">Caciocavallo (100g → 391 kcal)</option>
+ <option value="groviera|380">Groviera / Emmenthal (100g → 380 kcal)</option>
+ <option value="asiago|350">Asiago / Montasio (100g → 350 kcal)</option>
+ </optgroup>
+ <optgroup label="🫘 Legumi — kcal totali porzione">
+ <option value="ceci_l|246">Ceci (150g freschi → 246 kcal)</option>
+ <option value="fagioli_l|180">Fagioli (150g freschi → 180 kcal)</option>
+ <option value="lenticchie_l|174">Lenticchie (150g → 174 kcal)</option>
+ <option value="piselli_l|107">Piselli (150g → 107 kcal)</option>
+ <option value="lupini_l|116">Lupini (150g → 116 kcal)</option>
+ <option value="fave_l|108">Fave (150g → 108 kcal)</option>
+ <option value="hummus|354">Hummus di ceci (150g → 354 kcal)</option>
+ <option value="burger_soia|180">Burger di soia / legumi → 180 kcal</option>
+ </optgroup>
+ <optgroup label="🥩 Affettati (100g) — kcal totali">
+ <option value="bresaola|98">Bresaola (100g → 98 kcal)</option>
+ <option value="tacchino_arr|107">Tacchino arrosto / Fesa (100g → 107 kcal)</option>
+ <option value="prosciutto_cotto|145">Prosciutto cotto (100g → 145 kcal)</option>
+ <option value="prosciutto_crudo|196">Prosciutto crudo (100g → 196 kcal)</option>
+ <option value="speck|278">Speck (100g → 278 kcal)</option>
+ <option value="mortadella|311">Mortadella (100g → 311 kcal)</option>
+ <option value="salame|336">Salame (100g → 336 kcal)</option>
+ </optgroup>
+ <optgroup label="🍕 Speciale">
+ <option value="pizza_cena|700">Pizza al piatto / 2-3 tranci (sabato → ~700 kcal)</option>
+ </optgroup>
+ </select>
+ <div class="qty-unit" id="qtaSecCenaWrap">
+ <input type="number" id="qtaSecondoCena" value="200" min="0" max="500" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kSecondoCena">— kcal</div>
+ </div>
+
+ <!-- Uovo complemento legumi cena -->
+ <div id="uovoCompCBox" class="uovo-comp-box">
+ <div class="sec-title">🥚 Uovo complemento (come da prescrizione con i legumi)</div>
+ <div class="snack-row">
+ <select id="uovoCompC" onchange="ricalcola()">
+ <option value="">— nessuno —</option>
+ <option value="uovo_c1|72">1 Uovo sodo / coque / frittata → 72 kcal</option>
+ <option value="uovo_c2|144">2 Uova → 144 kcal</option>
+ </select>
+ <div class="kcal-badge" id="kUovoCompC">— kcal</div>
+ </div>
+ </div>
+
+ <!-- Suggerimento pranzo -->
+ <div id="sugPranzo" class="sug-box"></div>
+
+ <div class="sec-title">Verdure</div>
+ <div class="row-input">
+ <select id="verduraCena" onchange="ricalcola()">
+ <option value="">— nessuna —</option>
+ <option value="insalata|15">Insalata mista cruda</option>
+ <option value="pomodori|18">Pomodori</option>
+ <option value="zucchine|17">Zucchine</option>
+ <option value="spinaci|23">Spinaci (cotti)</option>
+ <option value="broccoli|34">Broccoli (cotti)</option>
+ <option value="carote|41">Carote</option>
+ <option value="finocchi|31">Finocchi</option>
+ <option value="fagiolini|31">Fagiolini</option>
+ <option value="peperoni|26">Peperoni</option>
+ <option value="melanzane|24">Melanzane</option>
+ <option value="cavolfiore|25">Cavolfiore</option>
+ <option value="carciofi|22">Carciofi</option>
+ <option value="funghi|22">Funghi</option>
+ <option value="sedano|16">Sedano</option>
+ <option value="cetrioli|15">Cetrioli</option>
+ <option value="radicchio|23">Radicchio</option>
+ <option value="asparagi|20">Asparagi</option>
+ <option value="cipolla|40">Cipolla</option>
+ <option value="bieta|20">Bieta / Cicoria</option>
+ </select>
+ <div class="qty-unit">
+ <input type="number" id="qtaVerduraCena" value="150" min="0" max="500" onchange="ricalcola()">
+ <span>g</span>
+ </div>
+ <div class="kcal-badge" id="kVerduraCena">— kcal</div>
+ </div>
+
+ <div class="sec-title">Frutta (1 porzione)</div>
+ <div class="snack-row">
+ <select id="fruttaCena" onchange="ricalcola()">
+ <option value="">— nessuna —</option>
+ <option value="mela|78">🍎 Mela / Pera (~150g → 78 kcal)</option>
+ <option value="arancia|70">🍊 Arancia / Agrumi (~150g → 70 kcal)</option>
+ <option value="banana|89">🍌 Banana (~100g → 89 kcal)</option>
+ <option value="fragole|32">🍓 Fragole (10 pz ~100g → 32 kcal)</option>
+ <option value="uva|60">🍇 Uva (15 chicchi ~90g → 60 kcal)</option>
+ <option value="kiwi|73">🥝 Kiwi (2 frutti ~120g → 73 kcal)</option>
+ <option value="pesche|59">🍑 Pesca / Pesca noce (~150g → 59 kcal)</option>
+ <option value="melone|85">🍈 Melone (2 fette ~250g → 85 kcal)</option>
+ <option value="cocomero|90">🍉 Cocomero (1 fetta ~300g → 90 kcal)</option>
+ <option value="ananas|85">🍍 Ananas (2 fette ~250g → 85 kcal)</option>
+ <option value="prugne|46">🟣 Prugne / Nespole (2 pz → 46 kcal)</option>
+ <option value="albicocche|48">🟡 Albicocche (4 pz ~120g → 48 kcal)</option>
+ <option value="ciliegie|60">🍒 Ciliegie (15 pz ~90g → 60 kcal)</option>
+ <option value="mirtilli|32">🫐 Mirtilli / Lamponi (~100g → 32 kcal)</option>
+ <option value="fichi|74">🫐 Fichi (2 pz ~100g → 74 kcal)</option>
+ <option value="kaki|70">🟠 Kaki / Melagrana (~130g → 70 kcal)</option>
+ <option value="mandorle|120">🌰 Mandorle (20 pz ~20g → 120 kcal)</option>
+ <option value="noci|130">🌰 Noci (5 pz ~20g → 130 kcal)</option>
+ <option value="pistacchi|145">🌰 Pistacchi (25 pz ~25g → 145 kcal)</option>
+ <option value="nocciole|130">🌰 Nocciole (25 pz ~25g → 130 kcal)</option>
+ <option value="castagne|130">🌰 Castagne (5 pz ~50g → 130 kcal)</option>
+ <option value="frutta_esotica|80">🥭 Avocado / Papaya (50g → 80 kcal)</option>
+ </select>
+ <div class="kcal-badge" id="kFruttaCena">— kcal</div>
+ </div>
+</div>
+
+<!-- PASTI VELOCI FUORI CASA -->
+<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#f0f7ff,#e8f4fd);border:1.5px solid #a8d4f0">
+ <div class="card-header" style="border-bottom:2px solid #c5e5f7;padding-bottom:8px">
+  <span class="card-icon">🥡</span>
+  <span class="card-title" style="color:#1a5f8a">Pasti Veloci Fuori Casa</span>
+  <span class="card-kcal" id="kcalPastoVeloce" style="background:#dbeeff;color:#1a5f8a">0 kcal</span>
+ </div>
+ <p style="font-size:.75rem;color:#1a5f8a;margin-bottom:10px;line-height:1.5">Seleziona un menu: le calorie vengono aggiunte automaticamente al pranzo. Ricorda di aggiungere sempre 1 porzione di frutta.</p>
+
+ <div class="sec-title">Scegli il menu veloce</div>
+ <div class="snack-row" style="margin-bottom:10px">
+  <select id="pastoVeloce" onchange="selezionaPastoVeloce()">
+   <option value="">— nessuno —</option>
+   <optgroup label="🥩 Lunedì">
+    <option value="lun_pan_uova|490">🥪 Panino segale (150g) + frittata 2 uova + verdure (~490 kcal)</option>
+   </optgroup>
+   <optgroup label="🐟 Martedì">
+    <option value="mar_pan_prosciutto|510">🥪 2 panini (150g) + prosciutto 100g + parmigiano + rucola (~510 kcal)</option>
+   </optgroup>
+   <optgroup label="🧀 Mercoledì">
+    <option value="mer_pan_provola|520">🥪 Pane (150g) + provola/emmental 100g + fagiolini (~520 kcal)</option>
+   </optgroup>
+   <optgroup label="🥚 Giovedì">
+    <option value="gio_gall_pollo|480">🍘 Gallette/cracker + petto pollo 200g + rucola (~480 kcal)</option>
+   </optgroup>
+   <optgroup label="🐟 Venerdì">
+    <option value="ven_pat_uova|470">🥔 Patate lesse (500g crude) + frittata 2 uova + pomodori secchi (~470 kcal)</option>
+   </optgroup>
+   <optgroup label="🥩 Sabato">
+    <option value="sab_pan_tonno|460">🥪 Panino (150g) + tonno scatola grande + pomodori secchi + verdure (~460 kcal)</option>
+   </optgroup>
+  </select>
+  <div class="kcal-badge" id="kPastoVeloce">— kcal</div>
+ </div>
+
+ <!-- Dettaglio menu selezionato -->
+ <div id="dettaglioPastoVeloce" style="display:none;background:white;border-radius:8px;padding:10px 12px;border-left:3px solid #1a5f8a;font-size:.74rem;color:var(--text);line-height:1.7;margin-bottom:10px"></div>
+
+ <!-- Tutti i menu come riferimento -->
+ <div style="margin-top:8px">
+  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Tutti i menu — riferimento rapido</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🥩 LUN</strong> — Panino segale 150g + frittata 2 uova + verdure</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~490 kcal</span>
+   </div>
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🐟 MAR</strong> — 2 panini 150g + prosciutto 100g + parmigiano + rucola</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~510 kcal</span>
+   </div>
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🧀 MER</strong> — Pane 150g + provola/emmental 100g + fagiolini</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~520 kcal</span>
+   </div>
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🥚 GIO</strong> — Gallette/cracker + petto pollo 200g + rucola</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~480 kcal</span>
+   </div>
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🐟 VEN</strong> — Patate lesse 500g crude + frittata 2 uova + pomodori secchi</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~470 kcal</span>
+   </div>
+   <div style="background:white;border-radius:7px;padding:8px 10px;border-left:3px solid #2d6a4f;font-size:.72rem;color:var(--text);line-height:1.5;display:flex;justify-content:space-between;align-items:center">
+    <span><strong style="color:#2d6a4f">🥩 SAB</strong> — Panino 150g + tonno scatola grande + pomodori secchi</span>
+    <span style="font-weight:700;color:#c9a84c;white-space:nowrap;margin-left:8px">~460 kcal</span>
+   </div>
+   <div style="background:#fff9e6;border-radius:7px;padding:8px 10px;border-left:3px solid #c9a84c;font-size:.72rem;color:#7d5a00;line-height:1.5">
+    💡 Se usi il pranzo veloce, <strong>inverti pranzo e cena</strong>. Usa l'olio della giornata. Aggiungi sempre 1 frutto (~70 kcal).
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- 7. OLIO + NOTE -->
+<div class="card">
+ <div class="card-header">
+ <span class="card-icon">🫒</span>
+ <span class="card-title">Olio d'oliva e Note</span>
+ <span class="card-kcal" id="kcalOlio">0 kcal</span>
+ </div>
+ <div class="sec-title">Cucchiai di olio usati oggi (max 6 — ogni cucchiaio ~90 kcal)</div>
+ <div class="olio-bar" id="olioBar"></div>
+ <div style="font-size:.76rem;color:var(--muted);margin-top:6px" id="olioInfo">0 cucchiai = 0 kcal</div>
+ <div class="sec-title" style="margin-top:12px">Note del giorno</div>
+ <textarea id="note" rows="3" placeholder="Annotazioni libere, come ti sei sentito, peso, ecc..."></textarea>
+</div>
+
+<!-- 8. EVENTI SETTIMANALI -->
+<div class="grid2">
+ <div class="card" style="border:2px solid #c9a84c;background:linear-gradient(135deg,#fffdf0,#fff9e6)">
+ <div class="card-header" style="border-bottom:2px solid #f5e6a3;padding-bottom:8px">
+ <span class="card-icon">🎉</span>
+ <span class="card-title" style="color:#8a6200">Pranzo Libero Settimanale</span>
+ <span id="pranzoLiberoStatus" style="margin-left:auto;font-size:.75rem;font-weight:700"></span>
+ </div>
+ <p style="font-size:.8rem;color:#6b5000;margin-bottom:9px;line-height:1.5">1 pranzo libero/settimana (es. domenica): 2 portate o piatto unico + verdura + frutto.</p>
+ <div style="margin-bottom:8px">
+  <div style="font-size:.72rem;font-weight:700;color:#8a6200;margin-bottom:4px">📊 Stima calorie pranzo libero:</div>
+  <select id="pranzoLiberoKcal" onchange="aggiornaPranzoLiberoKcal()" style="border:1.5px solid #c9a84c;border-radius:7px;padding:6px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fffdf0;width:100%">
+   <option value="0">— nessuna stima —</option>
+   <option value="600">🥗 Pranzo leggero (~600 kcal) — insalata, secondo, frutta</option>
+   <option value="800">🍽️ Pranzo normale (~800 kcal) — primo, secondo, verdura</option>
+   <option value="1000">🍴 Pranzo abbondante (~1000 kcal) — antipasto, primo, secondo</option>
+   <option value="1200">🎊 Pranzo di festa (~1200 kcal) — menù completo</option>
+  </select>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px">
+ <input type="date" id="pranzoLiberoData" style="border:1.5px solid #c9a84c;border-radius:7px;padding:5px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fffdf0;flex:1">
+ <button onclick="usaPranzoLibero()" style="background:#c9a84c;color:white;border:none;border-radius:7px;padding:7px 12px;font-family:Lato,sans-serif;font-weight:700;cursor:pointer;font-size:.82rem">✓ Usa</button>
+ <button onclick="resetPranzoLibero()" style="background:white;color:#c9a84c;border:2px solid #c9a84c;border-radius:7px;padding:7px 9px;font-family:Lato,sans-serif;font-weight:700;cursor:pointer;font-size:.82rem">✕</button>
+ </div>
+ <div id="pranzoLiberoInfo" style="font-size:.75rem;color:#6b5000;margin-top:7px"></div>
+ </div>
+
+ <div class="card" style="border:2px solid #c1440e;background:linear-gradient(135deg,#fff5f2,#ffeae5)">
+ <div class="card-header" style="border-bottom:2px solid #f5b8a0;padding-bottom:8px">
+ <span class="card-icon">🍕</span>
+ <span class="card-title" style="color:#8a2200">Serata Pizza Settimanale</span>
+ <span id="pizzaStatus" style="margin-left:auto;font-size:.75rem;font-weight:700"></span>
+ </div>
+ <p style="font-size:.8rem;color:#6b2000;margin-bottom:9px;line-height:1.5">1 serata pizza/settimana (es. sabato): 1 pizza al piatto o 2-3 tranci. In alternativa cena libera + pane.</p>
+ <div style="margin-bottom:8px">
+  <div style="font-size:.72rem;font-weight:700;color:#8a2200;margin-bottom:4px">📊 Stima calorie serata pizza:</div>
+  <select id="pizzaKcal" onchange="aggiornaPizzaKcal()" style="border:1.5px solid #c1440e;border-radius:7px;padding:6px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fff5f2;width:100%">
+   <option value="0">— nessuna stima —</option>
+   <optgroup label="🍕 Pizza">
+    <option value="700">🍕 Pizza al piatto margherita (~700 kcal)</option>
+    <option value="850">🍕 Pizza al piatto con ingredienti (~850 kcal)</option>
+    <option value="950">🍕 Pizza al piatto ricca / calzone (~950 kcal)</option>
+    <option value="600">🍕 2-3 tranci (~600 kcal)</option>
+   </optgroup>
+   <optgroup label="🫓 Focaccia">
+    <option value="350">🫓 Focaccia semplice 100g (~350 kcal)</option>
+    <option value="520">🫓 Focaccia semplice 150g (~520 kcal)</option>
+    <option value="600">🫓 Focaccia con olive/rosmarino 150g (~600 kcal)</option>
+    <option value="750">🫓 Focaccia farcita (formaggio/prosciutto) 150g (~750 kcal)</option>
+   </optgroup>
+   <optgroup label="🍴 Cena libera">
+    <option value="900">🍴 Cena libera leggera (~900 kcal)</option>
+    <option value="1100">🍴 Cena libera abbondante (~1100 kcal)</option>
+   </optgroup>
+  </select>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px">
+ <input type="date" id="pizzaData" style="border:1.5px solid #c1440e;border-radius:7px;padding:5px 9px;font-family:Lato,sans-serif;font-size:.82rem;background:#fff5f2;flex:1">
+ <button onclick="usaPizza()" style="background:#c1440e;color:white;border:none;border-radius:7px;padding:7px 12px;font-family:Lato,sans-serif;font-weight:700;cursor:pointer;font-size:.82rem">✓ Usa</button>
+ <button onclick="resetPizza()" style="background:white;color:#c1440e;border:2px solid #c1440e;border-radius:7px;padding:7px 9px;font-family:Lato,sans-serif;font-weight:700;cursor:pointer;font-size:.82rem">✕</button>
+ </div>
+ <div id="pizzaInfo" style="font-size:.75rem;color:#6b2000;margin-top:7px"></div>
+ </div>
+</div>
+
+<!-- 9. RIEPILOGO + STORICO -->
+<div class="grid2">
+ <div class="card" style="padding:0">
+ <div class="card-header" style="padding:14px 16px 8px">
+ <span class="card-icon">📊</span>
+ <span class="card-title">Riepilogo Calorie</span>
+ </div>
+ <div style="padding:0 16px 14px">
+ <div class="riepilogo-grid">
+ <div class="riepilogo-item"><div class="label">☕ Colazione</div><div class="value" id="rColazione">0</div></div>
+ <div class="riepilogo-item"><div class="label">🍎 Spuntini</div><div class="value" id="rSpuntini">0</div></div>
+ <div class="riepilogo-item"><div class="label">🍝 Pranzo</div><div class="value" id="rPranzo">0</div></div>
+ <div class="riepilogo-item"><div class="label">🍲 Cena</div><div class="value" id="rCena">0</div></div>
+ <div class="riepilogo-total">
+ <div class="label">⚡ TOTALE GIORNALIERO</div>
+ <div class="value" id="rTotale">0 kcal</div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="card">
+ <div class="card-header">
+ <span class="card-icon">📅</span>
+ <span class="card-title">Storico</span>
+ </div>
+ <div class="storico-list" id="storicoList">
+ <div style="color:var(--muted);font-size:.8rem;text-align:center;padding:18px">Nessun dato salvato</div>
+ </div>
+ <button class="btn" onclick="salvaGiorno()">💾 Salva giorno</button>
+ <button class="btn btn-outline" onclick="resetGiorno()" style="margin-top:6px">🔄 Reset</button>
+ <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:10px">
+ <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:7px">📦 Migrazione dati</div>
+ <button class="btn" onclick="esportaDati()" style="background:#5a7fa0;margin-bottom:5px">⬇️ Esporta tutti i dati</button>
+ <label style="display:block;width:100%">
+ <div class="btn" style="background:#7a5fa0;cursor:pointer;text-align:center">⬆️ Importa dati da file</div>
+ <input type="file" id="importFile" accept=".json" onchange="importaDati(event)" style="display:none">
+ </label>
+ <div id="importMsg" style="font-size:.73rem;margin-top:5px;text-align:center;min-height:15px"></div>
+ </div>
+ </div>
+</div>
+
+<script>
+// ===== CONSIGLI GIORNALIERI =====
+const consigli = {
+ 0:{pranzo:"🥩 LUNEDÌ — Pranzo: Pasta/riso/cereali (150g) + CARNE (da variare) + pane 50g o patate 200g + verdura + frutto.",cena:"🥚 LUNEDÌ — Cena: Pasta/cereali (100g) + UOVA (variare cottura) + verdura + frutto. Cena entro le 21:00."},
+ 1:{pranzo:"🐟 MARTEDÌ — Pranzo: Pasta/riso/cereali (150g) + PESCE (da variare) + pane 50g o patate 200g + verdura + frutto.",cena:"🧀 MARTEDÌ — Cena: Pasta/cereali (100g) + FORMAGGI/LATTICINI (anche come piatto unico) + verdura + frutto."},
+ 2:{pranzo:"🧀 MERCOLEDÌ — Pranzo: Pasta/riso/cereali (150g) + FORMAGGI (da variare) + pane 50g o patate 200g + verdura + frutto.",cena:"🫘 MERCOLEDÌ — Cena PIATTO UNICO: Pasta e legumi (100g pasta + 150g legumi freschi) + 1 uovo + verdura + frutto. In alternativa insalatona con legumi, patata lessa e cereali."},
+ 3:{pranzo:"🥚 GIOVEDÌ — Pranzo: Pasta/riso/cereali (150g) + UOVA (variare cottura) + pane 50g o patate 200g + verdura + frutto.",cena:"🥩 GIOVEDÌ — Cena: Pasta/cereali (100g) + CARNE (anche come condimento pasta) + verdura + frutto."},
+ 4:{pranzo:"🐟 VENERDÌ — Pranzo: Pasta/riso/cereali (150g) + PESCE (da variare) + pane 50g o patate 200g + verdura + frutto.",cena:"🥔 VENERDÌ — Cena PIATTO UNICO: Pasta e patate (100g pasta + 200g patate) + 50g affettato + verdura + frutto."},
+ 5:{pranzo:"🥩 SABATO — Pranzo: Pasta/riso/cereali (150g) + CARNE o AFFETTATO + pane 100g o patate 400g + verdura + frutto.",cena:"🍕 SABATO — Cena: 1 PIZZA AL PIATTO o 2-3 tranci. Oppure CENA LIBERA 2 portate + 1 fetta pane."},
+ 6:{pranzo:"🎉 DOMENICA — Pranzo LIBERO: 2 portate o piatto unico (es. pasta con pesce / ragù) + verdura + frutto.",cena:"🧀 DOMENICA — Cena: Pasta/cereali (100g) + FORMAGGI/LATTICINI + verdura + frutto. Solo 3 cucchiai olio."}
+};
+const giorniNomi = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
+let olioCount = 0;
+
+// ===== CATEGORIE ROTAZIONE =====
+const CATEGORIE = [
+ {id:'carne',nome:'Carne',icon:'🥩',target:3,max:4,desc:'Lun pranzo, Gio cena, Sab pranzo',
+ keywords:['pollo_petto','vitellone','coniglio','maiale_magro','hamburger','pollo_intero','tacchino_intero','trippa','agnello','fegato','pancetta','salsiccia']},
+ {id:'pesce',nome:'Pesce',icon:'🐟',target:2,max:3,desc:'Mar pranzo, Ven pranzo',
+ keywords:['orata','spigola','merluzzo','trota','cernia','dentice','rombo','sogliola','palombo','pesce_spada','tonno_fresco','salmone','polpo','gamberi','cozze','sgombro','sardine','tonno_scatola','salmone_affumicato']},
+ {id:'uova',nome:'Uova',icon:'🥚',target:2,max:3,desc:'Lun cena, Gio pranzo',
+ keywords:['uova2','uova1']},
+ {id:'formaggi',nome:'Formaggi',icon:'🧀',target:3,max:4,desc:'Mar cena, Mer pranzo, Dom cena',
+ keywords:['ricotta','fiordilatte','mozzarella_bufala','fiocchi_latte','caprino_fresco','primo_sale','tofu','scamorza','philadelphia','stracchino','feta','robiola','brie','gorgonzola','taleggio','fontina','provola','parmigiano','provolone','pecorino_stag','caciocavallo','groviera','asiago','cheddar']},
+ {id:'affettati',nome:'Affettati',icon:'🥓',target:1,max:2,desc:'Ven cena',
+ keywords:['bresaola','tacchino_arr','prosciutto_cotto','prosciutto_crudo','speck','mortadella','salame']},
+ {id:'legumi',nome:'Legumi',icon:'🫘',target:1,max:2,desc:'Mer cena',
+ keywords:['ceci_l','fagioli_l','lenticchie_l','piselli_l','lupini_l','fave_l','hummus','burger_soia']},
+ {id:'pizza',nome:'Pizza/Libero',icon:'🍕',target:1,max:1,desc:'Sab cena',
+ keywords:['pizza_cena']}
+];
+
+// ===== PORZIONI FISSE (no campo grammi) =====
+const FIXED = new Set([
+ // Colazione
+ 'ciambellone','biscotti','biscotto_cas','cereali','brioche',
+ 'pane_marmel','pane_miele','pane_arachidi','fette_bisc','fette_bisc_miele',
+ 'panino_frittata','panino_salumi','panino_ricotta','panino_pollo','panino_salmone','panino_tonno','panino_hummus',
+ // Bevande
+ 'latte_intero','cappuccino','latte_scremato','latte_capra','latte_asina',
+ 'latte_soia','latte_avena','latte_mandorla','latte_cocco','latte_orzo',
+ 'yogurt_intero','yogurt_frutta','yogurt_bere','kefir','skyr','centrifuga',
+ // Frutta colazione/pasti
+ 'mela','banana','arancia','fragole','kiwi','pesche','prugne','melone',
+ 'cocomero','ananas','uva','albicocche','ciliegie','mirtilli','fichi','kaki',
+ 'mandorle','noci','pistacchi','nocciole','castagne','frutta_esotica',
+ // Spuntini
+ 'frutta_sp','mousse_frutta','yogurt_sp','pavesini','oro_ciok','patatine','frutta_secca',
+ 'pane_olio_sp','pane_ricotta_sp','pane_marmell_sp','pane_ciocco_sp','frullato_latte',
+ 'gelato','dolce_cas','pizza_bianca_sp',
+ // Uova e legumi (kcal totale porzione)
+ 'uova2','uova1','uovo_c1','uovo_c2',
+ 'ceci_l','fagioli_l','lenticchie_l','piselli_l','lupini_l','fave_l','hummus','burger_soia',
+ // Formaggi (kcal totale porzione)
+ 'ricotta','fiordilatte','mozzarella_bufala','fiocchi_latte','caprino_fresco','primo_sale','tofu','scamorza',
+ 'philadelphia','stracchino','feta','robiola','brie','gorgonzola','taleggio','fontina','provola',
+ 'parmigiano','provolone','pecorino_stag','caciocavallo','groviera','asiago','cheddar',
+ // Affettati (kcal totale porzione)
+ 'bresaola','tacchino_arr','prosciutto_cotto','prosciutto_crudo','speck','mortadella','salame',
+ // Carne porzioni speciali
+ 'agnello','fegato','pancetta','salsiccia',
+ // Pizza e patate fisse
+ 'pizza_cena','patate400_c',
+ // Patate pranzo fisse (peso già calcolato), pane NO - proporzionale
+ 'patate_pranzo','patate_sabato','patate_acc','patate_sab'
+]);
+
+function getKcal(selId, qtaId) {
+ const sel = document.getElementById(selId);
+ if (!sel || !sel.value) return 0;
+ const parts = sel.value.split('|');
+ if (parts.length < 2) return 0;
+ const key = parts[0];
+ const val = parseFloat(parts[1]);
+ if (FIXED.has(key) || !qtaId) return Math.round(val);
+ const qtaEl = document.getElementById(qtaId);
+ const qta = qtaEl ? (parseFloat(qtaEl.value) || 0) : 0;
+ return Math.round(val * qta / 100);
+}
+
+function setBadge(id, kcal) {
+ const el = document.getElementById(id);
+ if (el) el.textContent = kcal > 0 ? kcal + ' kcal' : '— kcal';
+}
+
+function initOlio() {
+ const bar = document.getElementById('olioBar');
+ bar.innerHTML = '';
+ for (let i = 1; i <= 6; i++) {
+ const b = document.createElement('div');
+ b.className = 'olio-cucchiaio' + (i <= olioCount ? ' attivo' : '');
+ b.textContent = '🥄';
+ b.onclick = () => { olioCount = olioCount === i ? i-1 : i; aggiornaOlio(); ricalcola(); };
+ bar.appendChild(b);
+ }
+ document.getElementById('olioInfo').textContent = olioCount + ' cucchiai = ' + (olioCount*90) + ' kcal';
+}
+
+function aggiornaOlio() {
+ document.querySelectorAll('.olio-cucchiaio').forEach((b,i) => b.classList.toggle('attivo', i < olioCount));
+ document.getElementById('olioInfo').textContent = olioCount + ' cucchiai = ' + (olioCount*90) + ' kcal';
+ const el = document.getElementById('kcalOlio');
+ if (el) el.textContent = (olioCount*90) + ' kcal';
+}
+
+const LEGUMI_KEYS = new Set(['ceci_l','fagioli_l','lenticchie_l','piselli_l','lupini_l','fave_l','hummus','burger_soia','ceci','fagioli','lenticchie','piselli','lupini','fave']);
+const CARNE_KEYS = new Set(['pollo_petto','vitellone','coniglio','maiale_magro','hamburger','pollo_intero','tacchino_intero','trippa']);
+const PESCE_GRASSI = new Set(['salmone','sgombro']);
+const PESCE_MAGRI = new Set(['orata','spigola','merluzzo','trota','cernia','dentice','rombo','sogliola','palombo','pesce_spada','tonno_fresco','polpo','gamberi','cozze','sardine','tonno_scatola','salmone_affumicato']);
+const FORMAGGI_STAGIONATI_K = new Set(['parmigiano','provolone','pecorino_stag','caciocavallo','groviera','asiago','cheddar']);
+const FORMAGGI_FRESCHI_K = new Set(['ricotta','fiordilatte','mozzarella_bufala','fiocchi_latte','caprino_fresco','primo_sale','tofu','scamorza']);
+const FORMAGGI_SEMI_K = new Set(['philadelphia','stracchino','feta','robiola','brie','gorgonzola','taleggio','fontina','provola']);
+const AFFETTATI_K = new Set(['bresaola','tacchino_arr','prosciutto_cotto','prosciutto_crudo','speck','mortadella','salame']);
+
+function aggiornaUovoComp(pasto) {
+ const selId = pasto === 'P' ? 'secondoPranzo' : 'secondoCena';
+ const boxId = pasto === 'P' ? 'uovoCompPBox' : 'uovoCompCBox';
+ const compId = pasto === 'P' ? 'uovoCompP' : 'uovoCompC';
+ const sel = document.getElementById(selId);
+ const box = document.getElementById(boxId);
+ if (!sel || !box) return;
+ const key = sel.value ? sel.value.split('|')[0] : '';
+ const show = LEGUMI_KEYS.has(key);
+ box.style.display = show ? 'block' : 'none';
+ if (!show) { const c = document.getElementById(compId); if (c) c.value = ''; }
+}
+
+function getCatAbb(val) {
+ if (!val) return null;
+ const k = val.split('|')[0];
+ if (CARNE_KEYS.has(k) || ['agnello','fegato','pancetta','salsiccia'].includes(k)) return 'carne';
+ if (PESCE_GRASSI.has(k)) return 'pesce_grasso';
+ if (PESCE_MAGRI.has(k)) return 'pesce_magro';
+ if (k === 'uova2' || k === 'uova1') return 'uova';
+ if (FORMAGGI_STAGIONATI_K.has(k)) return 'formaggi_stagionati';
+ if (FORMAGGI_FRESCHI_K.has(k) || FORMAGGI_SEMI_K.has(k)) return 'formaggi_freschi';
+ if (LEGUMI_KEYS.has(k)) return 'legumi';
+ if (AFFETTATI_K.has(k)) return 'affettati';
+ if (k === 'pizza_cena') return 'pizza';
+ return null;
+}
+
+const SУГG = {
+ pranzo: {
+ carne: {livello:'ok', testo:'✅ Cena leggera consigliata: <strong>uova, legumi o formaggi freschi</strong> (ricotta, fior di latte).'},
+ pesce_magro: {livello:'ok', testo:'✅ Ottima scelta! A cena libero: <strong>uova, formaggi freschi o legumi</strong> vanno tutti bene.'},
+ pesce_grasso:{livello:'warn',testo:'⚠️ Salmone/sgombro sono grassi. A cena qualcosa di leggero: <strong>uova, legumi o ricotta</strong>. Evita formaggi stagionati.'},
+ uova: {livello:'ok', testo:'✅ A cena puoi scegliere <strong>pesce, formaggi freschi o legumi</strong>. Anche carne se non già fatta.'},
+ formaggi_freschi:{livello:'ok',testo:'✅ A cena <strong>pesce magro, uova o legumi</strong>. Evita altro formaggio.'},
+ formaggi_stagionati:{livello:'warn',testo:'⚠️ Formaggi grassi a pranzo. A cena molto leggero: <strong>uova, legumi o verdure</strong>. Evita pizza e altri formaggi.'},
+ legumi: {livello:'ok', testo:'✅ Pranzo vegetale ottimo! A cena <strong>pesce, carne, uova o formaggi</strong> a piacere.'},
+ affettati:{livello:'warn',testo:'⚠️ Sodio e grassi elevati. A cena <strong>uova, legumi o formaggi freschi</strong>. Evita pizza e altri affettati.'},
+ pizza: {livello:'over',testo:'🔴 Pasto molto calorico. A cena leggerissimo: <strong>verdure e al massimo uova o ricotta</strong>.'}
+ },
+ cena: {
+ carne: {livello:'ok', testo:'✅ A pranzo <strong>pesce, uova o formaggi freschi</strong>. Evita altra carne.'},
+ pesce_magro:{livello:'ok',testo:'✅ Cena leggera! A pranzo libero: <strong>carne, formaggi, uova o legumi</strong>.'},
+ pesce_grasso:{livello:'warn',testo:'⚠️ A pranzo qualcosa di leggero: <strong>pesce magro, uova o legumi</strong>.'},
+ uova: {livello:'ok', testo:'✅ Cena leggera. A pranzo <strong>carne, pesce, formaggi o legumi</strong> senza restrizioni.'},
+ formaggi_freschi:{livello:'ok',testo:'✅ A pranzo <strong>carne magra, pesce o legumi</strong>. Evita altro formaggio.'},
+ formaggi_stagionati:{livello:'warn',testo:'⚠️ A pranzo leggero: <strong>pesce magro, uova o legumi</strong>. Evita altri formaggi grassi.'},
+ legumi: {livello:'ok', testo:'✅ Ottima cena vegetale! A pranzo <strong>carne, pesce, uova o formaggi</strong> a piacere.'},
+ affettati:{livello:'warn',testo:'⚠️ A pranzo <strong>pesce magro, uova o legumi</strong>. Evita altri affettati.'},
+ pizza: {livello:'ok', testo:'🍕 Serata pizza. A pranzo leggero: <strong>pesce magro, uova o legumi</strong>. Limita il pane.'}
+ }
+};
+
+function aggiornaSuggerimenti() {
+ const vP = document.getElementById('secondoPranzo')?.value;
+ const vC = document.getElementById('secondoCena')?.value;
+ const cP = getCatAbb(vP), cC = getCatAbb(vC);
+ const stili = {ok:{bg:'#f0faf4',bd:'#40916c',tc:'#2d6a4f'},warn:{bg:'#fff9e6',bd:'#c9a84c',tc:'#8a6200'},over:{bg:'#fff0ec',bd:'#c1440e',tc:'#8a2200'}};
+ const boxC = document.getElementById('sugCena');
+ const boxP = document.getElementById('sugPranzo');
+ [['sugCena', cP, 'pranzo', '💡 Suggerimento per la cena'],
+ ['sugPranzo', cC, 'cena', '💡 Suggerimento per il pranzo']].forEach(([bid, cat, tipo, label]) => {
+ const box = document.getElementById(bid);
+ if (!box) return;
+ const s = cat && SУГG[tipo]?.[cat];
+ if (s) {
+ const st = stili[s.livello];
+ box.style.cssText = 'display:block;background:' + st.bg + ';border-color:' + st.bd;
+ box.innerHTML = '<strong style="color:' + st.tc + ';display:block;margin-bottom:2px">' + label + '</strong><span style="color:' + st.tc + '">' + s.testo + '</span>';
+ } else { box.style.display = 'none'; }
+ });
+}
+
+function ricalcola() {
+ aggiornaUovoComp('P');
+ aggiornaUovoComp('C');
+ aggiornaSuggerimenti();
+
+ // Colazione
+ const kColB = getKcal('colBase', null);
+ const kColBev = getKcal('colBev', null);
+ const kFCol = getKcal('fruttaCol', null);
+ setBadge('kColBase', kColB); setBadge('kColBev', kColBev); setBadge('kFruttaCol', kFCol);
+ const totCol = kColB + kColBev + kFCol;
+
+ // Spuntino mattina
+ const kSpM = getKcal('spMattina', null);
+ setBadge('kSpMattina', kSpM);
+ const elSpM = document.getElementById('kcalSpMattina');
+ if (elSpM) elSpM.textContent = kSpM + ' kcal';
+
+ // Pranzo
+ const kPP = getKcal('primoPranzo', 'qtaPrimoPranzo');
+ const kSP = getKcal('secondoPranzo', 'qtaSecondoPranzo');
+ const kUCP = getKcal('uovoCompP', null);
+ const kPaP = getKcal('panePranzo', 'qtaPanePranzo');
+ const kVP = getKcal('verduraPranzo', 'qtaVerduraPranzo');
+ const kFP = getKcal('fruttaPranzo', null);
+ setBadge('kPrimoPranzo', kPP); setBadge('kSecondoPranzo', kSP); setBadge('kUovoCompP', kUCP);
+ setBadge('kPanePranzo', kPaP); setBadge('kVerduraPranzo', kVP); setBadge('kFruttaPranzo', kFP);
+ const kPastoV = getKcalPastoVeloce();
+ const kPranzoLibero = getKcalPranzoLibero();
+ const totPranzo = kPP + kSP + kUCP + kPaP + kVP + kFP + kPastoV + kPranzoLibero;
+
+ // Spuntino pomeriggio
+ const kSpP = getKcal('spPomeriggio', null);
+ setBadge('kSpPomeriggio', kSpP);
+ const elSpP = document.getElementById('kcalSpPomeriggio');
+ if (elSpP) elSpP.textContent = kSpP + ' kcal';
+
+ // Cena
+ const kPC = getKcal('primoCena', 'qtaPrimoCena');
+ const kSC = getKcal('secondoCena', 'qtaSecondoCena');
+ const kUCC = getKcal('uovoCompC', null);
+ const kVC = getKcal('verduraCena', 'qtaVerduraCena');
+ const kFC = getKcal('fruttaCena', null);
+ const kPizzaCena = getKcalPizza();
+ setBadge('kPrimoCena', kPC); setBadge('kSecondoCena', kSC); setBadge('kUovoCompC', kUCC);
+ setBadge('kVerduraCena', kVC); setBadge('kFruttaCena', kFC);
+ const totCena = kPC + kSC + kUCC + kVC + kFC + kPizzaCena;
+
+ // Olio
+ const totOlio = olioCount * 90;
+ const totSpuntini = kSpM + kSpP;
+ const totale = totCol + totSpuntini + totPranzo + totCena + totOlio;
+
+ document.getElementById('kcalColazione').textContent = totCol + ' kcal';
+ document.getElementById('kcalPranzo').textContent = totPranzo + ' kcal';
+ document.getElementById('kcalCena').textContent = totCena + ' kcal';
+ document.getElementById('rColazione').textContent = totCol;
+ document.getElementById('rSpuntini').textContent = totSpuntini;
+ document.getElementById('rPranzo').textContent = totPranzo;
+ document.getElementById('rCena').textContent = totCena;
+ document.getElementById('rTotale').textContent = totale + ' kcal';
+ document.getElementById('kcalHeader').textContent = '⚡ ' + totale + ' kcal totali';
+
+ calcolaRotazione(document.getElementById('dataInput').value);
+ calcolaMediaSettimanale(document.getElementById('dataInput').value);
+
+ // Autosalvataggio con debounce
+ clearTimeout(window._autoSaveTimer);
+ window._autoSaveTimer = setTimeout(() => {
+ const ds = document.getElementById('dataInput').value;
+ if (!ds) return;
+ localStorage.setItem('dieta_' + ds, JSON.stringify(raccogliDati()));
+ aggiornaStorico();
+ calcolaRotazione(ds);
+ calcolaMediaSettimanale(ds);
+ // Mostra indicatore salvato
+ const el = document.getElementById('autoSaveIndicator');
+ if (el) {
+ el.textContent = '✅ Salvato automaticamente';
+ el.style.opacity = '1';
+ clearTimeout(window._fadeTimer);
+ window._fadeTimer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+ }
+ }, 1000);
+}
+
+function cambiaData() {
+ const input = document.getElementById('dataInput');
+ if (!input.value) return;
+ const d = new Date(input.value + 'T12:00:00');
+ const g = (d.getDay() + 6) % 7;
+ document.getElementById('giornoLabel').textContent = giorniNomi[g];
+ const c = consigli[g];
+ document.getElementById('consiglioPranzo').innerHTML = '<strong>📋 Consiglio del Dott. Pacella:</strong>' + c.pranzo;
+ document.getElementById('consiglioCena').innerHTML = '<strong>📋 Consiglio del Dott. Pacella:</strong>' + c.cena;
+ const saved = localStorage.getItem('dieta_' + input.value);
+ if (saved) caricaDati(JSON.parse(saved)); else resetCampi();
+ ricalcola();
+ aggiornaEventiSpeciali();
+}
+
+function dateToStr(d) {
+ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getLunedi(dateStr) {
+ const d = new Date(dateStr + 'T12:00:00');
+ const day = (d.getDay()+6)%7;
+ const lun = new Date(d);
+ lun.setDate(d.getDate()-day);
+ return lun;
+}
+
+function getCatFromValue(val) {
+ if (!val) return null;
+ const k = val.split('|')[0];
+ // Alternativa al pesce: legumi e uova vanno nella loro categoria
+ if (k === 'uova2_alt_pesce') return 'uova';
+ if (['ceci','fagioli','lenticchie','piselli','lupini','fave','hummus'].includes(k)) return 'legumi';
+ for (const cat of CATEGORIE) {
+  if (cat.keywords.includes(k)) return cat.id;
+ }
+ return null;
+}
+
+// ===== SUGGERIMENTO INTELLIGENTE GIORNALIERO =====
+const CAT_NOMI = {
+  carne: '🥩 Carne', pesce: '🐟 Pesce', uova: '🥚 Uova',
+  formaggi: '🧀 Formaggi', legumi: '🫘 Legumi',
+  affettati: '🥓 Affettati', pizza: '🍕 Pizza/Libero'
+};
+
+// Kcal medie per categoria (stima per la porzione prescritta)
+const CAT_KCAL_MEDIA = {
+  carne:     { leggera: 214, media: 280, pesante: 340 }, // pollo vs vitellone vs agnello
+  pesce:     { leggera: 154, media: 210, pesante: 340 }, // merluzzo vs orata vs sgombro
+  uova:      { leggera: 120, media: 120, pesante: 120 }, // fisso
+  formaggi:  { leggera: 165, media: 260, pesante: 392 }, // ricotta vs mozzarella vs parmigiano
+  legumi:    { leggera: 107, media: 164, pesante: 246 }, // piselli vs ceci vs hummus
+  affettati: { leggera: 98,  media: 145, pesante: 311 }, // bresaola vs prosciutto vs mortadella
+  pizza:     { leggera: 700, media: 850, pesante: 1000 }
+};
+
+function getCatKcalMedia(catId) {
+  const c = CAT_KCAL_MEDIA[catId];
+  return c ? Math.round((c.leggera + c.media + c.pesante) / 3) : 200;
+}
+
+function calcolaSuggerimentoGiornaliero(dataCorrente, counts) {
+  if (!dataCorrente) return null;
+  const todayIdx = (new Date(dataCorrente+'T12:00:00').getDay()+6)%7;
+  const giorniRimanenti = 6 - todayIdx;
+
+  const kcalPranzoOggi = parseInt(document.getElementById('kcalPranzo')?.textContent) || 0;
+  const kcalCol  = parseInt(document.getElementById('rColazione')?.textContent) || 0;
+  const kcalSp   = parseInt(document.getElementById('rSpuntini')?.textContent) || 0;
+  const kcalGia  = kcalCol + kcalSp + kcalPranzoOggi;
+  const kcalRimanentiPerCena = Math.max(300, 1900 - kcalGia);
+
+  const deficit = CATEGORIE.filter(c => counts[c.id] < c.target)
+    .sort((a,b) => {
+      const urgA = (a.target - counts[a.id]) / Math.max(giorniRimanenti, 1);
+      const urgB = (b.target - counts[b.id]) / Math.max(giorniRimanenti, 1);
+      return urgB - urgA;
+    });
+
+  const savedToday = localStorage.getItem('dieta_' + dataCorrente);
+  const datiOggi = savedToday ? JSON.parse(savedToday) : {};
+  const catOggiPranzo = getCatFromValue(document.getElementById('secondoPranzo')?.value || datiOggi.secondoPranzo);
+  const catOggiCena   = getCatFromValue(document.getElementById('secondoCena')?.value   || datiOggi.secondoCena);
+
+  const disponibili = deficit.filter(c =>
+    c.id !== catOggiPranzo && c.id !== catOggiCena && counts[c.id] < c.max
+  );
+
+  if (deficit.length === 0) return { tutto_ok: true, kcalPranzoOggi, kcalRimanentiPerCena };
+
+  let consiglioPranzo = disponibili[0] || deficit[0] || null;
+
+  const candidateCena = deficit.filter(c =>
+    c.id !== catOggiPranzo && c.id !== catOggiCena &&
+    c.id !== consiglioPranzo?.id && counts[c.id] < c.max
+  );
+
+  let consiglioCena = null;
+  if (candidateCena.length > 0) {
+    if (kcalPranzoOggi > 650) {
+      candidateCena.sort((a,b) => getCatKcalMedia(a.id) - getCatKcalMedia(b.id));
+    } else if (kcalPranzoOggi < 450 && kcalPranzoOggi > 0) {
+      candidateCena.sort((a,b) => {
+        const urgA = (a.target - counts[a.id]) / Math.max(giorniRimanenti, 1);
+        const urgB = (b.target - counts[b.id]) / Math.max(giorniRimanenti, 1);
+        return urgB - urgA;
+      });
+    }
+    consiglioCena = candidateCena[0];
+  } else {
+    consiglioCena = deficit.find(c => c.id !== consiglioPranzo?.id) || null;
+  }
+
+  const urgenti = deficit.filter(c => (c.target - counts[c.id]) > giorniRimanenti);
+  return { pranzo: consiglioPranzo, cena: consiglioCena, urgenti, giorniRimanenti, deficit, kcalPranzoOggi, kcalRimanentiPerCena, bilancioCalorico: kcalPranzoOggi > 0 };
+}
+
+function aggiornaSuggerimentoGiornaliero(dataCorrente, counts) {
+  const ris = calcolaSuggerimentoGiornaliero(dataCorrente, counts);
+  const box     = document.getElementById('suggerimentoOggi');
+  const content = document.getElementById('suggerimentoOggiContent');
+  const boxP    = document.getElementById('suggerimentoRotazionePranzo');
+  const boxC    = document.getElementById('suggerimentoRotazioneCena');
+  if (!box || !content) return;
+  if (!ris) { box.style.display = 'none'; return; }
+
+  if (ris.tutto_ok) {
+    box.style.display = 'block';
+    box.style.background = 'linear-gradient(135deg,#f0faf4,#d8f3dc)';
+    box.style.borderColor = '#40916c';
+    content.innerHTML = '✅ <strong>Ottimo!</strong> Hai rispettato perfettamente la rotazione questa settimana!';
+    if (boxP) boxP.style.display = 'none';
+    if (boxC) boxC.style.display = 'none';
+    return;
+  }
+
+  let msg = '';
+  if (ris.pranzo) msg += `🍝 <strong>Pranzo:</strong> ${CAT_NOMI[ris.pranzo.id]} (mancano ${ris.pranzo.target - counts[ris.pranzo.id]}x questa settimana)<br>`;
+  if (ris.cena) {
+    msg += `🍲 <strong>Cena:</strong> ${CAT_NOMI[ris.cena.id]} (mancano ${ris.cena.target - counts[ris.cena.id]}x questa settimana)`;
+    if (ris.bilancioCalorico && ris.kcalPranzoOggi > 650)
+      msg += ` — <em>scelta leggera per bilanciare il pranzo (${ris.kcalPranzoOggi} kcal)</em>`;
+    else if (ris.bilancioCalorico && ris.kcalPranzoOggi < 450)
+      msg += ` — <em>pranzo leggero, puoi permetterti qualcosa di più sostanzioso</em>`;
+  }
+  if (ris.bilancioCalorico) {
+    const col = ris.kcalRimanentiPerCena < 400 ? '#c1440e' : ris.kcalRimanentiPerCena < 600 ? '#c9a84c' : '#2d6a4f';
+    msg += `<br><br>⚡ <strong style="color:${col}">Budget cena: ~${ris.kcalRimanentiPerCena} kcal</strong> per restare intorno a 1.900 kcal oggi`;
+  }
+  if (ris.urgenti?.length > 0)
+    msg += `<br>⚠️ <strong>In ritardo:</strong> ${ris.urgenti.map(c => CAT_NOMI[c.id]).join(', ')} (${ris.giorniRimanenti} giorni rimasti)`;
+
+  box.style.display = 'block';
+  content.innerHTML = msg;
+
+  if (boxP) {
+    if (ris.pranzo) {
+      boxP.style.display = 'block';
+      boxP.innerHTML = `🔄 <strong>Rotazione:</strong> Oggi sarebbe utile <strong>${CAT_NOMI[ris.pranzo.id]}</strong> — mancano ancora ${ris.pranzo.target - counts[ris.pranzo.id]} volte questa settimana.`;
+    } else boxP.style.display = 'none';
+  }
+  if (boxC) {
+    if (ris.cena) {
+      boxC.style.display = 'block';
+      let testoC = `🔄 <strong>Rotazione + bilancio:</strong> Stasera ti consiglio <strong>${CAT_NOMI[ris.cena.id]}</strong>`;
+      if (ris.bilancioCalorico) {
+        if (ris.kcalPranzoOggi > 650)
+          testoC += ` — categoria leggera (~${getCatKcalMedia(ris.cena.id)} kcal) per bilanciare il pranzo abbondante.`;
+        else if (ris.kcalPranzoOggi < 450 && ris.kcalPranzoOggi > 0)
+          testoC += ` — pranzo leggero, puoi permetterti questa categoria.`;
+        else
+          testoC += ` — buon equilibrio con il pranzo di oggi.`;
+      } else {
+        testoC += ` — mancano ancora ${ris.cena.target - counts[ris.cena.id]} volte questa settimana.`;
+      }
+      boxC.innerHTML = testoC;
+    } else boxC.style.display = 'none';
+  }
+}
+
+function calcolaRotazione(dataCorrente) {
+ if (!dataCorrente) return;
+ const lun = getLunedi(dataCorrente);
+ const dom = new Date(lun); dom.setDate(lun.getDate()+6);
+ document.getElementById('settimanaRange').textContent = dateToStr(lun) + ' → ' + dateToStr(dom);
+
+ const counts = {}, dettagli = {}, giorniMancanti = {};
+ CATEGORIE.forEach(c => { counts[c.id] = 0; dettagli[c.id] = []; giorniMancanti[c.id] = []; });
+
+ // Giorni della settimana con i secondi registrati
+ const giorniUsati = {}; // giorno -> {pranzo: cat, cena: cat}
+ for (let i = 0; i < 7; i++) {
+ const d = new Date(lun); d.setDate(lun.getDate()+i);
+ const ds = dateToStr(d);
+ const isToday = ds === dataCorrente;
+ let dati = null;
+ const saved = localStorage.getItem('dieta_' + ds);
+ if (saved) dati = JSON.parse(saved);
+ let vP = dati ? dati.secondoPranzo : null;
+ let vC = dati ? dati.secondoCena : null;
+ if (isToday) {
+ const lP = document.getElementById('secondoPranzo')?.value;
+ const lC = document.getElementById('secondoCena')?.value;
+ if (lP) vP = lP; if (lC) vC = lC;
+ }
+ giorniUsati[ds] = { pranzo: getCatFromValue(vP), cena: getCatFromValue(vC) };
+ [['Pranzo', vP], ['Cena', vC]].forEach(([pasto, val]) => {
+ const cat = getCatFromValue(val);
+ if (cat) { counts[cat]++; dettagli[cat].push(giorniNomi[i] + ' ' + pasto); }
+ });
+ }
+
+ // Calcola giorni rimanenti della settimana (da oggi in poi)
+ const todayIdx = (new Date(dataCorrente+'T12:00:00').getDay()+6)%7;
+ const giorniRimanenti = 7 - todayIdx - 1; // giorni dopo oggi
+
+ const grid = document.getElementById('rotazioneGrid');
+ grid.innerHTML = '';
+
+ CATEGORIE.forEach(cat => {
+ const n = counts[cat.id];
+ const rim = cat.target - n;
+ const status = n === 0 ? 'empty' : n <= cat.target ? 'ok' : n <= cat.max ? 'warn' : 'over';
+ const stxt = n === 0 ? 'Nessuno ancora' : n < cat.target ? 'Ancora ' + rim + ' da fare' : n === cat.target ? '✓ Perfetto!' : n <= cat.max ? '⚠ Leggermente sopra' : '✗ Superato';
+ const rtxt = rim > 0 ? '+'+rim : rim === 0 ? '✓' : String(rim);
+ const det = dettagli[cat.id].length > 0 ? dettagli[cat.id].join(', ') : '—';
+
+ // Suggerimento personalizzato
+ let sug = '';
+ const bgSug = status === 'ok' ? 'rgba(45,106,79,0.08)' : status === 'warn' ? 'rgba(201,168,76,0.1)' : status === 'over' ? 'rgba(193,68,14,0.08)' : 'rgba(0,0,0,0.04)';
+ const colSug = status === 'ok' ? '#1b4332' : status === 'warn' ? '#7d5a00' : status === 'over' ? '#8a2200' : '#555';
+
+ if (rim > 0 && giorniRimanenti > 0) {
+ sug = '💡 Ti mancano ancora <strong>' + rim + ' volte</strong> questa settimana. Hai ancora <strong>' + giorniRimanenti + ' giorni</strong> per farlo — prova a inserirlo ' + (rim === 1 ? 'una volta' : rim + ' volte') + ' tra pranzo e cena dei prossimi giorni.';
+ } else if (rim > 0 && giorniRimanenti === 0) {
+ sug = '⚠️ Oggi è l\'ultimo giorno della settimana e ti mancano ancora <strong>' + rim + ' volte</strong>. Cerca di inserirlo oggi se possibile!';
+ } else if (n === cat.target) {
+ sug = '✅ Hai rispettato perfettamente la prescrizione per questa categoria. Continua così!';
+ } else if (n > cat.target && n <= cat.max) {
+ sug = '⚠️ Hai mangiato ' + cat.nome.toLowerCase() + ' una volta in più del previsto. Non è un problema grave, ma nei prossimi giorni scegli altre categorie.';
+ } else if (n > cat.max) {
+ sug = '🔴 Hai superato il massimo per ' + cat.nome.toLowerCase() + '. Evita questa categoria per il resto della settimana e compensa con <strong>' + getSuggerimentoAlternativo(cat.id, counts) + '</strong>.';
+ } else if (n === 0 && giorniRimanenti < rim) {
+ sug = '⚠️ Non hai ancora mangiato ' + cat.nome.toLowerCase() + ' questa settimana. Con ' + giorniRimanenti + ' giorni rimasti sarà difficile raggiungere l\'obiettivo — prova ad inserirlo nelle prossime cene.';
+ }
+
+ grid.innerHTML += `
+ <div class="rot-card ${status}">
+ <div style="display:flex;align-items:center;justify-content:space-between">
+ <div style="display:flex;align-items:center;gap:8px">
+ <div class="rot-icon">${cat.icon}</div>
+ <div>
+ <div class="rot-name">${cat.nome}</div>
+ <div class="rot-target">Prev: ${cat.target} | Max: ${cat.max}</div>
+ </div>
+ </div>
+ <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+ <div class="rot-rim ${rim<0?'over':''}">${rtxt}</div>
+ <div class="rot-count ${status}">${n}/${cat.target}</div>
+ </div>
+ </div>
+ <div class="rot-status ${status}">${stxt}</div>
+ <div class="rot-detail">📅 ${det}</div>
+ ${sug ? `<div class="rot-suggerimento" style="background:${bgSug};color:${colSug}">${sug}</div>` : ''}
+ </div>`;
+ });
+
+ // Aggiorna suggerimento giornaliero intelligente
+ aggiornaSuggerimentoGiornaliero(dataCorrente, counts);
+}
+
+function getSuggerimentoAlternativo(catId, counts) {
+ // Suggerisce la categoria con più spazio disponibile
+ const alternative = {
+ carne: ['pesce', 'uova', 'legumi'],
+ pesce: ['carne', 'uova', 'formaggi'],
+ uova: ['legumi', 'pesce', 'formaggi_freschi'],
+ formaggi: ['pesce', 'uova', 'legumi'],
+ legumi: ['uova', 'pesce', 'formaggi'],
+ affettati: ['bresaola', 'pesce', 'uova'],
+ pizza: ['pasto leggero con verdure']
+ };
+ const alts = alternative[catId] || ['pesce', 'uova'];
+ const best = alts.find(a => (counts[a]||0) < (CATEGORIE.find(c=>c.id===a)?.target||99));
+ return best ? (CATEGORIE.find(c=>c.id===best)?.nome || best) : alts[0];
+}
+
+// ===== EVENTI SPECIALI =====
+function getChiave(tipo, dateStr) { return 'speciale_' + tipo + '_' + dateToStr(getLunedi(dateStr)); }
+
+function mostraStatoEvento(tipo, statusId, infoId, colore) {
+ const dateStr = document.getElementById('dataInput').value;
+ if (!dateStr) return;
+ const saved = localStorage.getItem(getChiave(tipo, dateStr));
+ const sEl = document.getElementById(statusId), iEl = document.getElementById(infoId);
+ if (saved) {
+ const obj = JSON.parse(saved);
+ if (sEl) { sEl.textContent = '✅ Utilizzato'; sEl.style.color = '#2d6a4f'; }
+ if (iEl) iEl.textContent = 'Usato il ' + obj.data;
+ const inp = document.getElementById(tipo === 'pranzoLibero' ? 'pranzoLiberoData' : 'pizzaData');
+ if (inp) inp.value = obj.data;
+ } else {
+ if (sEl) { sEl.textContent = '⬜ Non ancora utilizzato'; sEl.style.color = colore; }
+ if (iEl) iEl.textContent = 'Nessun utilizzo questa settimana.';
+ }
+}
+
+function aggiornaEventiSpeciali() {
+ mostraStatoEvento('pranzoLibero','pranzoLiberoStatus','pranzoLiberoInfo','#8a6200');
+ mostraStatoEvento('pizza','pizzaStatus','pizzaInfo','#8a2200');
+ const ds = document.getElementById('dataInput').value;
+ const plEl = document.getElementById('pranzoLiberoData');
+ const pzEl = document.getElementById('pizzaData');
+ if (plEl && !plEl.value) plEl.value = ds;
+ if (pzEl && !pzEl.value) pzEl.value = ds;
+}
+
+function usaPranzoLibero() {
+ const ds = document.getElementById('pranzoLiberoData').value || document.getElementById('dataInput').value;
+ if (!ds) return;
+ localStorage.setItem(getChiave('pranzoLibero', ds), JSON.stringify({data: ds}));
+ mostraStatoEvento('pranzoLibero','pranzoLiberoStatus','pranzoLiberoInfo','#8a6200');
+}
+function usaPizza() {
+ const ds = document.getElementById('pizzaData').value || document.getElementById('dataInput').value;
+ if (!ds) return;
+ localStorage.setItem(getChiave('pizza', ds), JSON.stringify({data: ds}));
+ mostraStatoEvento('pizza','pizzaStatus','pizzaInfo','#8a2200');
+}
+function resetPranzoLibero() {
+ const ds = document.getElementById('dataInput').value;
+ if (!ds) return;
+ localStorage.removeItem(getChiave('pranzoLibero', ds));
+ document.getElementById('pranzoLiberoData').value = '';
+ mostraStatoEvento('pranzoLibero','pranzoLiberoStatus','pranzoLiberoInfo','#8a6200');
+}
+function resetPizza() {
+ const ds = document.getElementById('dataInput').value;
+ if (!ds) return;
+ localStorage.removeItem(getChiave('pizza', ds));
+ document.getElementById('pizzaData').value = '';
+ mostraStatoEvento('pizza','pizzaStatus','pizzaInfo','#8a2200');
+}
+
+// ===== SALVA / CARICA =====
+const IDS_SALVA = ['primoPranzo','qtaPrimoPranzo','secondoPranzo','qtaSecondoPranzo',
+ 'uovoCompP','panePranzo','qtaPanePranzo','verduraPranzo','qtaVerduraPranzo','fruttaPranzo',
+ 'primoCena','qtaPrimoCena','secondoCena','qtaSecondoCena','uovoCompC',
+ 'verduraCena','qtaVerduraCena','fruttaCena',
+ 'colBase','colBev','fruttaCol','spMattina','spPomeriggio','pastoVeloce','pranzoLiberoKcal','pizzaKcal','note'];
+
+function raccogliDati() {
+ const d = {olio: olioCount};
+ IDS_SALVA.forEach(id => { const el = document.getElementById(id); if (el) d[id] = el.value; });
+ d.totale = document.getElementById('rTotale').textContent;
+ return d;
+}
+function caricaDati(d) {
+ Object.entries(d).forEach(([k,v]) => {
+ if (k === 'olio') { olioCount = v; aggiornaOlio(); return; }
+ if (k === 'totale') return;
+ const el = document.getElementById(k); if (el) el.value = v;
+ });
+}
+function resetCampi() {
+ IDS_SALVA.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+ olioCount = 0; aggiornaOlio();
+ const defaults = {qtaPrimoPranzo:150,qtaSecondoPranzo:200,qtaPanePranzo:50,qtaVerduraPranzo:150,qtaPrimoCena:100,qtaSecondoCena:200,qtaVerduraCena:150};
+ Object.entries(defaults).forEach(([id,v]) => { const el = document.getElementById(id); if (el) el.value = v; });
+}
+function salvaGiorno() {
+ const ds = document.getElementById('dataInput').value;
+ if (!ds) { alert('Seleziona prima una data!'); return; }
+ localStorage.setItem('dieta_' + ds, JSON.stringify(raccogliDati()));
+ aggiornaStorico();
+ calcolaRotazione(ds);
+ calcolaMediaSettimanale(ds);
+ const el = document.getElementById('autoSaveIndicator');
+ if (el) { el.textContent = '💾 Salvato!'; el.style.opacity = '1'; setTimeout(()=>{ el.style.opacity='0'; }, 2000); }
+}
+function resetGiorno() { resetCampi(); ricalcola(); }
+
+function aggiornaStorico() {
+ const list = document.getElementById('storicoList');
+ const keys = [];
+ for (let i = 0; i < localStorage.length; i++) {
+ const k = localStorage.key(i);
+ if (k.startsWith('dieta_')) keys.push(k);
+ }
+ keys.sort().reverse();
+ if (!keys.length) {
+ list.innerHTML = '<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:18px">Nessun dato salvato</div>';
+ return;
+ }
+ list.innerHTML = '';
+ keys.slice(0,10).forEach(k => {
+ const ds = k.replace('dieta_','');
+ const d = JSON.parse(localStorage.getItem(k));
+ const el = document.createElement('div');
+ el.className = 'storico-item';
+ const day = new Date(ds+'T12:00:00');
+ el.innerHTML = '<span class="data">' + ds + ' <small>' + giorniNomi[(day.getDay()+6)%7] + '</small></span><span class="kcal">' + (d.totale||'—') + '</span>';
+ el.onclick = () => { document.getElementById('dataInput').value = ds; cambiaData(); };
+ list.appendChild(el);
+ });
+}
+
+function esportaDati() {
+ const tutto = {};
+ for (let i = 0; i < localStorage.length; i++) {
+ const k = localStorage.key(i);
+ if (k.startsWith('dieta_') || k.startsWith('speciale_')) tutto[k] = localStorage.getItem(k);
+ }
+ if (!Object.keys(tutto).length) { alert('Nessun dato da esportare!'); return; }
+ const blob = new Blob([JSON.stringify(tutto,null,2)],{type:'application/json'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url; a.download = 'dieta_pacella_backup_' + new Date().toISOString().slice(0,10) + '.json';
+ a.click(); URL.revokeObjectURL(url);
+}
+
+function importaDati(event) {
+ const file = event.target.files[0]; if (!file) return;
+ const msg = document.getElementById('importMsg');
+ const reader = new FileReader();
+ reader.onload = e => {
+ try {
+ const dati = JSON.parse(e.target.result);
+ let imp = 0, sal = 0;
+ Object.entries(dati).forEach(([k,v]) => {
+ if (k.startsWith('dieta_') || k.startsWith('speciale_')) {
+ if (!localStorage.getItem(k)) { localStorage.setItem(k,v); imp++; } else sal++;
+ }
+ });
+ msg.style.color = '#2d6a4f';
+ msg.textContent = '✅ Importati ' + imp + ' giorni.' + (sal ? ' (' + sal + ' già presenti, non sovrascritti)' : '');
+ aggiornaStorico(); cambiaData();
+ } catch(err) { msg.style.color = '#c1440e'; msg.textContent = '❌ File non valido.'; }
+ event.target.value = '';
+ };
+ reader.readAsText(file);
+}
+
+// ============ MEDIA SETTIMANALE ============
+const FABBISOGNO = 2289;
+const OBIETTIVO = 1800;
+
+function calcolaMediaSettimanale(dataCorrente) {
+ if (!dataCorrente) return;
+ const lun = getLunedi(dataCorrente);
+ const dom = new Date(lun); dom.setDate(lun.getDate() + 6);
+ const rangeEl = document.getElementById('mediaSettimanaRange');
+ if (rangeEl) rangeEl.textContent = dateToStr(lun) + ' → ' + dateToStr(dom);
+
+ let totKcal = 0, giorniConDati = 0;
+ const giorniData = [];
+
+ for (let i = 0; i < 7; i++) {
+ const d = new Date(lun); d.setDate(lun.getDate() + i);
+ const ds = dateToStr(d);
+ const isToday = ds === dataCorrente;
+ let kcal = 0;
+ const saved = localStorage.getItem('dieta_' + ds);
+ if (saved) {
+ const dati = JSON.parse(saved);
+ const m = dati.totale ? dati.totale.match(/(\d+)/) : null;
+ kcal = m ? parseInt(m[1]) : 0;
+ }
+ if (isToday) {
+ const liveEl = document.getElementById('rTotale');
+ if (liveEl) { const m = liveEl.textContent.match(/(\d+)/); if (m) kcal = parseInt(m[1]); }
+ }
+ if (kcal > 0) { totKcal += kcal; giorniConDati++; }
+ giorniData.push({ nome: giorniNomi[i], ds, kcal, isToday });
+ }
+
+ const media = giorniConDati > 0 ? Math.round(totKcal / giorniConDati) : 0;
+ const mediaEl = document.getElementById('mediaKcal');
+ const statusEl = document.getElementById('mediaStatus');
+
+ if (mediaEl) {
+ if (media === 0) {
+ mediaEl.textContent = '— kcal'; mediaEl.style.color = '#aaa';
+ if (statusEl) { statusEl.textContent = 'Nessun dato questa settimana'; statusEl.style.color = '#aaa'; }
+ } else {
+ mediaEl.textContent = media.toLocaleString('it-IT') + ' kcal';
+ if (media <= OBIETTIVO) {
+ mediaEl.style.color = '#2d6a4f';
+ if (statusEl) { statusEl.textContent = '✅ Ottimo! Stai creando un deficit calorico'; statusEl.style.color = '#2d6a4f'; }
+ } else if (media <= FABBISOGNO) {
+ mediaEl.style.color = '#c9a84c';
+ if (statusEl) { statusEl.textContent = '🟡 Nella norma, ma poco deficit per dimagrire'; statusEl.style.color = '#c9a84c'; }
+ } else {
+ mediaEl.style.color = '#c1440e';
+ if (statusEl) { statusEl.textContent = '⚠️ Superi il fabbisogno di +' + (media - FABBISOGNO).toLocaleString('it-IT') + ' kcal/giorno'; statusEl.style.color = '#c1440e'; }
+ }
+ }
+ }
+
+ const container = document.getElementById('mediaGiorni');
+ if (!container) return;
+ container.innerHTML = '';
+ let hasData = false;
+ giorniData.forEach(({ nome, kcal, isToday }) => {
+ if (kcal === 0) return;
+ hasData = true;
+ const perc = Math.min(100, Math.round(kcal / FABBISOGNO * 100));
+ const percObj = Math.round(OBIETTIVO / FABBISOGNO * 100);
+ const col = kcal > FABBISOGNO ? '#c1440e' : kcal > OBIETTIVO ? '#c9a84c' : '#2d6a4f';
+ container.innerHTML += `
+ <div style="display:flex;align-items:center;gap:8px">
+ <div style="font-size:.72rem;font-weight:700;color:${isToday ? 'var(--green)' : 'var(--text)'};width:28px;flex-shrink:0">${nome.slice(0,3)}</div>
+ <div style="flex:1;background:#f0ece8;border-radius:5px;height:16px;position:relative;overflow:hidden">
+ <div style="height:100%;width:${perc}%;background:${col};border-radius:5px"></div>
+ <div style="position:absolute;top:0;left:${percObj}%;height:100%;width:2px;background:rgba(193,68,14,0.4)"></div>
+ </div>
+ <div style="font-size:.7rem;font-weight:700;color:${col};width:70px;text-align:right;flex-shrink:0">${kcal.toLocaleString('it-IT')} kcal</div>
+ </div>`;
+ });
+ if (!hasData) container.innerHTML = '<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:8px">Nessun giorno salvato questa settimana</div>';
+}
+
+// ===== PASTO VELOCE =====
+const DETTAGLI_PASTO_VELOCE = {
+ 'lun_pan_uova': '🥪 <strong>Panino segale 150g</strong> + frittata 2 uova + verdure a piacere<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta<br>☕ Usa parte dell\'olio della giornata',
+ 'mar_pan_prosciutto': '🥪 <strong>2 panini rosetta 150g</strong> + prosciutto crudo/cotto 100g<br>🧀 + 2 cucchiai parmigiano + rucola + olio<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta',
+ 'mer_pan_provola': '🥪 <strong>Pane 150g</strong> + provola o emmental 100g + fagiolini<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta<br>☕ Usa parte dell\'olio della giornata',
+ 'gio_gall_pollo': '🍘 <strong>4 pacchetti cracker o 10 gallette</strong> + petto pollo 200g + rucola<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta<br>☕ Usa parte dell\'olio della giornata',
+ 'ven_pat_uova': '🥔 <strong>Patate lesse 500g crude</strong> + frittata 2 uova<br>🍅 + 2 pomodori secchi sottolio sgocciolati<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta',
+ 'sab_pan_tonno': '🥪 <strong>Panino 150g</strong> (pane patate/mais/integrale) + tonno scatola grande<br>🍅 + 2 pomodori secchi sottolio + verdure<br>🥗 + Verdura cruda 100g o cotta 200g<br>🍎 + 1 porzione di frutta'
+};
+
+function selezionaPastoVeloce() {
+ const sel = document.getElementById('pastoVeloce');
+ const det = document.getElementById('dettaglioPastoVeloce');
+ const badge = document.getElementById('kPastoVeloce');
+ const header = document.getElementById('kcalPastoVeloce');
+ if (!sel.value) {
+  if (det) det.style.display = 'none';
+  if (badge) badge.textContent = '— kcal';
+  if (header) header.textContent = '0 kcal';
+  ricalcola(); return;
+ }
+ const parts = sel.value.split('|');
+ const key = parts[0];
+ const kcal = parseInt(parts[1]) || 0;
+ if (det) {
+  det.style.display = 'block';
+  det.innerHTML = DETTAGLI_PASTO_VELOCE[key] || '';
+ }
+ if (badge) badge.textContent = kcal + ' kcal';
+ if (header) header.textContent = kcal + ' kcal';
+ ricalcola();
+}
+
+function getKcalPastoVeloce() {
+ const sel = document.getElementById('pastoVeloce');
+ if (!sel || !sel.value) return 0;
+ const parts = sel.value.split('|');
+ return parseInt(parts[1]) || 0;
+}
+
+function aggiornaPranzoLiberoKcal() { ricalcola(); }
+function aggiornaPizzaKcal() { ricalcola(); }
+
+function getKcalPranzoLibero() {
+ const sel = document.getElementById('pranzoLiberoKcal');
+ if (!sel || !sel.value) return 0;
+ return parseInt(sel.value) || 0;
+}
+
+function getKcalPizza() {
+ const sel = document.getElementById('pizzaKcal');
+ if (!sel || !sel.value) return 0;
+ return parseInt(sel.value) || 0;
+}
+
+window.onload = () => {
+ const today = new Date();
+ document.getElementById('dataInput').value = dateToStr(today);
+ initOlio();
+ cambiaData();
+ aggiornaStorico();
+};
+</script>
+</body>
+</html>
