@@ -1,297 +1,12 @@
-<!DOCTYPE html><html lang="it"><head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js" integrity="sha512-iZ2ORl595Wx6miw+GuadDet4WQbdSWS3JLMoNfY8cRGoEFy6oT3G9IbcrBeL6AfkgpA51ETt/faX6yLV+/gFJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-      (function() {
-        const originalConsole = window.console;
-        window.console = {
-          log: (...args) => {
-            originalConsole.log(...args);
-            window.parent.postMessage({ type: 'console', message: args.join(' ') }, '*');
-          },
-          error: (...args) => {
-            originalConsole.error(...args);
-            window.parent.postMessage({ type: 'console', message: 'Error: ' + args.join(' ') }, '*');
-          },
-          warn: (...args) => {
-            originalConsole.warn(...args);
-            window.parent.postMessage({ type: 'console', message: 'Warning: ' + args.join(' ') }, '*');
-          }
-        };
-
-        let requestId = 0;
-        let callbacksMap = new Map();
-        let streamControllers = new Map();
-        
-        window.claude = {
-          complete: (prompt) => {
-            return new Promise((resolve, reject) => {
-              const id = requestId++;
-              callbacksMap.set(id, { resolve, reject });
-              window.parent.postMessage({ type: 'claudeComplete', id, prompt }, '*');
-            });
-          }
-        };
-
-        window.storage = {
-          get: (key, shared = false) => {
-            return new Promise((resolve, reject) => {
-              const id = requestId++;
-              callbacksMap.set(id, { resolve, reject });
-              window.parent.postMessage({ type: 'storageGet', id, key, shared }, '*');
-            });
-          },
-          set: (key, value, shared = false) => {
-            return new Promise((resolve, reject) => {
-              const id = requestId++;
-              callbacksMap.set(id, { resolve, reject });
-              window.parent.postMessage({ type: 'storageSet', id, key, value, shared }, '*');
-            });
-          },
-          delete: (key, shared = false) => {
-            return new Promise((resolve, reject) => {
-              const id = requestId++;
-              callbacksMap.set(id, { resolve, reject });
-              window.parent.postMessage({ type: 'storageDelete', id, key, shared }, '*');
-            });
-          },
-          list: (prefix, shared = false) => {
-            return new Promise((resolve, reject) => {
-              const id = requestId++;
-              callbacksMap.set(id, { resolve, reject });
-              window.parent.postMessage({ type: 'storageList', id, prefix, shared }, '*');
-            });
-          }
-        };
-
-        let pendingBlobs = new Map();
-        URL.createObjectURL = (blob) => {
-          // Store the blob and create an ID and URL for it
-          const blobId = `blob-${Date.now()}-${Math.random()}`;
-          pendingBlobs.set(blobId, blob);
-          return `blob-request://${blobId}`;
-        };
-
-        URL.revokeObjectURL = (url) => {
-          // Remove the blob from our store
-          const blobId = url.replace("blob-request://", "");
-          pendingBlobs.delete(blobId);
-        };
-
-        const getBlobFromURL = (url) => {
-          const blobId = url.replace("blob-request://", "");
-          return pendingBlobs.get(blobId);
-        };
-
-        // Override global fetch with streaming support
-        window.fetch = (url, init = {}) => {
-          return new Promise((resolve, reject) => {
-            const id = requestId++;
-            const channelId = `fetch-${id}-${Date.now()}`;
-            
-            callbacksMap.set(id, { 
-              resolve: (response) => {
-                // Create a ReadableStream for the response body
-                const stream = new ReadableStream({
-                  start(controller) {
-                    streamControllers.set(channelId, controller);
-                  },
-                  cancel() {
-                    streamControllers.delete(channelId);
-                  }
-                });
-                
-                // Create and return the Response with the stream
-                resolve(new Response(stream, {
-                  status: response.status,
-                  statusText: response.statusText,
-                  headers: response.headers
-                }));
-              },
-              reject,
-              channelId
-            });
-            
-            window.parent.postMessage({
-              type: 'proxyFetch',
-              id,
-              url,
-              init,
-              channelId
-            }, '*');
-          });
-        };
-
-        window.addEventListener('message', async (event) => {
-          if (event.data.type === 'takeScreenshot') {
-            const rootElement = document.getElementById('artifacts-component-root-html');
-            if (!rootElement) {
-              window.parent.postMessage({
-                type: 'screenshotError',
-                error: new Error('Root element not found'),
-              }, '*');
-            }
-            const screenshot = await htmlToImage.toPng(rootElement, {
-              imagePlaceholder:
-                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjePDgwX8ACOQDoNsk0PMAAAAASUVORK5CYII=",
-            });
-            window.parent.postMessage({
-              type: 'screenshotData',
-              data: screenshot,
-            }, '*');
-          } else if (event.data.type === 'claudeComplete') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-            } else {
-              callback.resolve(event.data.completion);
-            }
-            callbacksMap.delete(event.data.id);
-          } else if (event.data.type === 'proxyFetchResponse') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-              callbacksMap.delete(event.data.id);
-            } else {
-              // Initial response with headers, status, etc.
-              callback.resolve({
-                status: event.data.status,
-                statusText: event.data.statusText,
-                headers: event.data.headers
-              });
-              // Don't delete the callback yet if streaming
-              if (!event.data.body) {
-                callbacksMap.delete(event.data.id);
-              }
-            }
-          } else if (event.data.type === 'proxyFetchStream') {
-            // Handle streaming data chunks
-            const controller = streamControllers.get(event.data.channelId);
-            if (controller) {
-              if (event.data.error) {
-                controller.error(new Error(event.data.error));
-                streamControllers.delete(event.data.channelId);
-              } else if (event.data.done) {
-                controller.close();
-                streamControllers.delete(event.data.channelId);
-                // Clean up the callback
-                const callback = Array.from(callbacksMap.entries()).find(
-                  ([_, value]) => value.channelId === event.data.channelId
-                );
-                if (callback) {
-                  callbacksMap.delete(callback[0]);
-                }
-              } else if (event.data.chunk) {
-                controller.enqueue(new Uint8Array(event.data.chunk));
-              }
-            }
-          } else if (event.data.type === 'storageGet') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-            } else {
-              callback.resolve(event.data.result);
-            }
-            callbacksMap.delete(event.data.id);
-          } else if (event.data.type === 'storageSet') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-            } else {
-              callback.resolve(event.data.result);
-            }
-            callbacksMap.delete(event.data.id);
-          } else if (event.data.type === 'storageDelete') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-            } else {
-              callback.resolve(event.data.result);
-            }
-            callbacksMap.delete(event.data.id);
-          } else if (event.data.type === 'storageList') {
-            const callback = callbacksMap.get(event.data.id);
-            if (event.data.error) {
-              callback.reject(new Error(event.data.error));
-            } else {
-              callback.resolve(event.data.result);
-            }
-            callbacksMap.delete(event.data.id);
-          }
-        });
-
-        window.addEventListener('click', (event) => {
-          const isEl = event.target instanceof HTMLElement;
-          if (!isEl) return;
-    
-          // find ancestor links
-          const linkEl = event.target.closest("a");
-          if (!linkEl || !linkEl.href) return;
-    
-          event.preventDefault();
-          event.stopImmediatePropagation();
-    
-          if (linkEl.href.startsWith("blob-request:")) {
-            const blob = getBlobFromURL(linkEl.href);
-            if (!blob) return;
-            void blob.arrayBuffer().then((data) => {
-              window.parent.postMessage({
-                type: "downloadFile",
-                filename: linkEl.download,
-                data,
-                mimeType: blob.type || "application/octet-stream",
-              });
-            });
-          } else if (linkEl.href.startsWith("data:")) {
-            const [header, base64Data] = linkEl.href.split(",");
-            const mimeMatch = header.match(/data:([^;]+)/);
-            const mimeType = mimeMatch ? mimeMatch[1] : "application/octet-stream";
-            const binaryString = atob(base64Data);
-            const data = Uint8Array.from(binaryString, (c) =>
-              c.charCodeAt(0),
-            ).buffer;
-            window.parent.postMessage({
-              type: "downloadFile",
-              filename: linkEl.download,
-              data,
-              mimeType,
-            });
-          } else {
-            let linkUrl;
-            try {
-              linkUrl = new URL(linkEl.href);
-            } catch (error) {
-              return;
-            }
-    
-            if (linkUrl.hostname === window.location.hostname) return;
-      
-            window.parent.postMessage({
-              type: 'openExternal',
-              href: linkEl.href,
-            }, '*');
-          }
-      });
-
-        const originalOpen = window.open;
-        window.open = function (url) {
-          window.parent.postMessage({
-            type: "openExternal",
-            href: url,
-          }, "*");
-        };
-
-        window.addEventListener('error', (event) => {
-          window.parent.postMessage({ type: 'console', message: 'Uncaught Error: ' + event.message }, '*');
-        });
-      })();
-    </script>
-  
+<!DOCTYPE html>
+<html lang="it">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>HACCP – Il Castellaccio</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -704,7 +419,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 </style>
 </head>
-<body id="artifacts-component-root-html">
+<body>
 
 <header class="hdr">
   <div class="hdr-brand">
@@ -726,22 +441,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <div class="page active" id="pg-home">
     <div class="greet">
       <h2 id="greet-h">Buongiorno 👋</h2>
-      <p id="greet-d">domenica 12 aprile 2026</p>
-    </div><div style="background: rgba(251, 146, 60, 0.094); border: 1.5px solid rgba(251, 146, 60, 0.2); border-radius: 12px; padding: 11px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-      <span style="font-size:18px;flex-shrink:0">⚠️</span>
-      <div style="flex:1">
-        <div style="font-size:0.8rem;font-weight:700;color:#fb923c">Condivisione non disponibile da Claude</div>
-        <div style="font-size:0.68rem;color:#8aaa90;margin-top:1px">Tocca qui per salvare l'app sul telefono e sbloccare tutte le funzioni.</div>
-      </div>
-      <span style="color:#fb923c;font-size:0.85rem;font-weight:700">›</span></div>
-    <div id="alerts-box"><div class="alert warn"><span class="ai">🌡️</span><span class="at">Nessuna temperatura registrata oggi.</span></div><div class="alert warn"><span class="ai">🧹</span><span class="at">Nessuna sanificazione registrata oggi.</span></div></div>
+      <p id="greet-d"></p>
+    </div>
+    <div id="alerts-box"></div>
     <div class="sec-lbl">Riepilogo del mese</div>
     <div class="stats">
       <div class="sc g"><div class="sl">Temp.</div><div class="sv" id="sh-t">0</div><div class="ss">rilevazioni</div></div>
       <div class="sc b"><div class="sl">Sanif.</div><div class="sv" id="sh-s">0</div><div class="ss">giornate</div></div>
       <div class="sc o"><div class="sl">Non Conf.</div><div class="sv" id="sh-nc">0</div><div class="ss">anomalie</div></div>
       <div class="sc y"><div class="sl">Manut.</div><div class="sv" id="sh-m">0</div><div class="ss">interventi</div></div>
-      <div class="sc r"><div class="sl">Abbatt.</div><div class="sv" id="sh-a">1</div><div class="ss">operazioni</div></div>
+      <div class="sc r"><div class="sl">Abbatt.</div><div class="sv" id="sh-a">0</div><div class="ss">operazioni</div></div>
       <div class="sc p"><div class="sl">Prod.</div><div class="sv" id="sh-p">0</div><div class="ss">produzioni</div></div>
     </div>
     <div class="sec-lbl">Registrazione rapida</div>
@@ -754,11 +463,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="qb" onclick="goPage('prod')"><div class="qi">📋</div><div class="ql">Produz.</div><div class="qd">DOC 07</div></div>
     </div>
     <div class="sec-lbl">Ultime registrazioni</div>
-    <div id="rec-box"><div class="rec-item">
-      <div class="ri r">❄️</div>
-      <div class="rb"><div class="rt">Brodo</div><div class="rs">Abbattimento · 11/04/2026</div></div>
-      <span class="badge ok">OK</span>
-    </div></div>
+    <div id="rec-box"><div class="empty"><div class="ei">📋</div><p>Nessuna registrazione ancora.</p></div></div>
   </div>
 
   <!-- ══ INSERIMENTO RAPIDO TEMPERATURE ══ -->
@@ -774,182 +479,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
     <div class="temp-day-header">
       <div>
-        <div class="tdh-date" id="tq-datelab">domenica 12 aprile 2026</div>
+        <div class="tdh-date" id="tq-datelab"></div>
         <div class="tdh-sub">Rilevazione quotidiana</div>
       </div>
       <button onclick="goPage('griglia')" style="background:var(--surf2);border:1px solid var(--border);color:var(--text2);border-radius:9px;padding:7px 12px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">📊 Vedi griglia</button>
     </div>
 
     <!-- Frigo cards generate da JS -->
-    <div id="frigo-cards-box">
-    <div class="frigo-card " id="fc-0">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-0">F1</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 1</div>
-          <div class="frigo-loc">Cucina · <span style="color:var(--text2)">Latticini, Salse, Verdure</span></div>
-          <div class="frigo-range">Range: 0°C → 6°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-0" value="" placeholder="—" oninput="onFrigoInput(0, 0, 6)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-0">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-0">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-0" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-1">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-1">F2</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 2</div>
-          <div class="frigo-loc">Locale Antipasti · <span style="color:var(--text2)">Antipasti, Pasta</span></div>
-          <div class="frigo-range">Range: 0°C → 6°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-1" value="" placeholder="—" oninput="onFrigoInput(1, 0, 6)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-1">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-1">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-1" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-2">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-2">F3</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 3</div>
-          <div class="frigo-loc">Locale Griglia · <span style="color:var(--text2)">Verdura, Bruschette</span></div>
-          <div class="frigo-range">Range: 0°C → 6°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-2" value="" placeholder="—" oninput="onFrigoInput(2, 0, 6)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-2">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-2">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-2" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-3">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-3">F4</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 4</div>
-          <div class="frigo-loc">Locale Griglia · <span style="color:var(--text2)">Pasta, Formaggio</span></div>
-          <div class="frigo-range">Range: 0°C → 6°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-3" value="" placeholder="—" oninput="onFrigoInput(3, 0, 6)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-3">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-3">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-3" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-4">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-4">F5</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 5</div>
-          <div class="frigo-loc">Locale Griglia · <span style="color:var(--text2)">Carni</span></div>
-          <div class="frigo-range">Range: 0°C → 2°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-4" value="" placeholder="—" oninput="onFrigoInput(4, 0, 2)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-4">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-4">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-4" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-5">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-5">F6</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 6</div>
-          <div class="frigo-loc">Corridoio · <span style="color:var(--text2)">Bevande</span></div>
-          <div class="frigo-range">Range: 4°C → 5°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-5" value="" placeholder="—" oninput="onFrigoInput(5, 4, 5)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-5">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-5">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-5" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-6">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-6">F7</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Frigo 7</div>
-          <div class="frigo-loc">Sala · <span style="color:var(--text2)">Bevande</span></div>
-          <div class="frigo-range">Range: 0°C → 2°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-6" value="" placeholder="—" oninput="onFrigoInput(6, 0, 2)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-6">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-6">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-6" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div>
-    <div class="frigo-card " id="fc-7">
-      <div class="frigo-card-top">
-        <div class="frigo-badge " id="fb-7">CG</div>
-        <div class="frigo-info">
-          <div class="frigo-name">Congelatore</div>
-          <div class="frigo-loc">Corridoio · <span style="color:var(--text2)">Prodotti abbattuti</span></div>
-          <div class="frigo-range">Range: -21°C → -15°C</div>
-        </div>
-      </div>
-      <div class="frigo-input-row">
-        <div class="frigo-input-wrap">
-          <input type="number" step="0.1" inputmode="decimal" class="frigo-input " id="tq-7" value="" placeholder="—" oninput="onFrigoInput(7, -21, -15)">
-          <span class="frigo-unit">°C</span>
-        </div>
-        <div class="frigo-status-pill " id="pill-7">—</div>
-      </div>
-      <div class="frigo-note " id="note-wrap-7">
-        <label>⚠️ Azione correttiva (obbligatoria se fuori range)</label>
-        <textarea id="tq-note-7" placeholder="Descrivere l'azione correttiva intrapresa..."></textarea>
-      </div>
-    </div></div>
+    <div id="frigo-cards-box"></div>
 
     <div class="firma-row">
       <label>Firma operatore</label>
@@ -977,7 +514,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <span class="month-lbl" id="mn-temp"></span>
       <button onclick="changeMonth('temp',+1)">▶</button>
     </div>
-    <p class="note-info" style="margin-bottom:10px">Range: frigoriferi T ≤ 4°C ±2°C (0→6°C) · congelatore T ≤ -18°C ±3°C (-21→-15°C) · 🔴 = fuori range</p>
+    <p class="note-info" style="margin-bottom:10px">Range: frigoriferi 0→3°C · Carni (F5) 0→2°C · Congelatore -18→-15°C · 🔴 = fuori range</p>
     <div class="gtable-wrap">
       <table class="gtable" id="gt-temp">
         <thead>
@@ -1158,15 +695,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
 
     <!-- VIEW: SELEZIONE MODALITÀ -->
-    <div id="prod-view-main" style="display: block;">
+    <div id="prod-view-main">
       <div class="sec-lbl">Cosa vuoi fare?</div>
 
       <!-- Ricette salvate -->
-      <div id="prod-ricette-box"><div style="background:var(--purple-d);border:1.5px dashed #c084fc44;border-radius:var(--r);padding:16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:1.6rem;margin-bottom:6px">🫙</div>
-      <div style="font-size:0.85rem;font-weight:700;color:var(--purple)">Nessuna ricetta salvata</div>
-      <div style="font-size:0.75rem;color:var(--text3);margin-top:4px">Crea la tua prima ricetta qui sotto</div>
-    </div></div>
+      <div id="prod-ricette-box"></div>
 
       <div style="display:flex;gap:8px;margin-bottom:16px">
         <button class="btn-prod-mode" onclick="showProdView('nuova-ricetta')" style="flex:1">
@@ -1177,7 +710,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </div>
 
       <div class="sec-lbl">Ultime produzioni</div>
-      <div id="list-prod"><div class="empty"><div class="ei">📋</div><p>Nessuna registrazione.</p></div></div>
+      <div id="list-prod"></div>
       <button class="btn-view-grid" onclick="printDoc('prod')" style="border-color:var(--purple);color:var(--purple);margin-top:4px">🖨️ Stampa DOC 07</button>
     </div>
 
@@ -1400,14 +933,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 // DATI FRIGORIFERI
 // ──────────────────────────────────────────────────────────────────────────────
 const FRIGOS = [
-  { id:'F1', nome:'Frigo 1', loc:'Cucina',         cont:'Latticini, Salse, Verdure', min:0, max:6 },
-  { id:'F2', nome:'Frigo 2', loc:'Locale Antipasti',cont:'Antipasti, Pasta',         min:0, max:6 },
-  { id:'F3', nome:'Frigo 3', loc:'Locale Griglia',  cont:'Verdura, Bruschette',      min:0, max:6 },
-  { id:'F4', nome:'Frigo 4', loc:'Locale Griglia',  cont:'Pasta, Formaggio',         min:0, max:6 },
+  { id:'F1', nome:'Frigo 1', loc:'Cucina',         cont:'Latticini, Salse, Verdure', min:0, max:3 },
+  { id:'F2', nome:'Frigo 2', loc:'Locale Antipasti',cont:'Antipasti, Pasta',         min:0, max:3 },
+  { id:'F3', nome:'Frigo 3', loc:'Locale Griglia',  cont:'Verdura, Bruschette',      min:0, max:3 },
+  { id:'F4', nome:'Frigo 4', loc:'Locale Griglia',  cont:'Pasta, Formaggio',         min:0, max:3 },
   { id:'F5', nome:'Frigo 5', loc:'Locale Griglia',  cont:'Carni',                    min:0, max:2 },
-  { id:'F6', nome:'Frigo 6', loc:'Corridoio',       cont:'Bevande',                  min:4, max:5 },
-  { id:'F7', nome:'Frigo 7', loc:'Sala',            cont:'Bevande',                  min:0, max:2 },
-  { id:'CG', nome:'Congelatore', loc:'Corridoio',   cont:'Prodotti abbattuti',        min:-21, max:-15 },
+  { id:'F6', nome:'Frigo 6', loc:'Corridoio',       cont:'Bevande',                  min:0, max:3 },
+  { id:'F7', nome:'Frigo 7', loc:'Sala',            cont:'Bevande',                  min:0, max:3 },
+  { id:'CG', nome:'Congelatore', loc:'Corridoio',   cont:'Prodotti abbattuti',        min:-18, max:-15 },
 ];
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1922,38 +1455,77 @@ function salvaRicetta() {
 }
 
 // ── Usa ricetta per nuova produzione ────────────────────────────────────────
+const K_LOTTI = 'hc_lotti'; // { "nomeIngrediente": [{lotto, scadenza, fornitore, data}] }
+
 function apriUsaRicetta(idx) {
   const ricette = ld(K_RICETTE);
   ricettaAttiva = { ...ricette[idx], idx };
   document.getElementById('usa-ricetta-nome').textContent = ricettaAttiva.nome;
   document.getElementById('usa-data').value = oggi();
 
-  // Genera lotto automatico: ANNO-MESE-GIORNO-NNN
+  // Lotto prodotto automatico
   const d = new Date();
   const prodOggi = ld(K.prod).filter(p=>p.data===oggi()).length;
   document.getElementById('usa-lotto').value =
     `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${String(prodOggi+1).padStart(3,'0')}`;
 
-  // Genera un campo lotto per ogni ingrediente
+  const lottiSalvati = ldObj(K_LOTTI);
+
+  // Genera card per ogni ingrediente con lotti attivi selezionabili
   const box = document.getElementById('usa-ingredienti-box');
-  box.innerHTML = ricettaAttiva.ingredienti.map((ig, i) => `
+  box.innerHTML = ricettaAttiva.ingredienti.map((ig, i) => {
+    const lottiIngr = (lottiSalvati[ig.nome] || []).filter(l => l.lotto);
+    const opzioniLotti = lottiIngr.length
+      ? `<div style="margin-bottom:6px">
+          <label style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);display:block;margin-bottom:4px">Lotti attivi</label>
+          <div style="display:flex;flex-wrap:wrap;gap:5px" id="lotti-chips-${i}">
+            ${lottiIngr.map((l,li)=>`
+              <div onclick="selLottoAttivo(${i},${li},'${ig.nome}')"
+                style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:var(--surf2);font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap"
+                data-lotto="${l.lotto}" data-scad="${l.scadenza||''}">
+                ${l.lotto}${l.scadenza?' · scad.'+fmt(l.scadenza):''}
+              </div>`).join('')}
+          </div>
+        </div>`
+      : '';
+    return `
     <div class="ingr-lotto-row">
       <div class="ilr-nome">${ig.nome}</div>
       ${ig.fornitore ? `<div class="ilr-fornitore">Fornitore: ${ig.fornitore}</div>` : ''}
+      ${opzioniLotti}
       <div class="ilr-fields">
         <div>
-          <label>Lotto</label>
-          <input type="text" id="usa-lotto-${i}" placeholder="N° lotto">
+          <label>N° Lotto</label>
+          <input type="text" id="usa-lotto-${i}" placeholder="Inserisci o seleziona">
         </div>
         <div>
           <label>Scadenza</label>
           <input type="date" id="usa-scad-${i}">
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   document.getElementById('usa-firma').value = '';
   showProdView('usa');
+}
+
+function selLottoAttivo(ingrIdx, lottoIdx, nomeIngr) {
+  const lottiSalvati = ldObj(K_LOTTI);
+  const l = (lottiSalvati[nomeIngr]||[])[lottoIdx];
+  if(!l) return;
+  // Compila i campi
+  const inpLotto = document.getElementById('usa-lotto-'+ingrIdx);
+  const inpScad  = document.getElementById('usa-scad-'+ingrIdx);
+  if(inpLotto) inpLotto.value = l.lotto;
+  if(inpScad && l.scadenza) inpScad.value = l.scadenza;
+  // Evidenzia chip selezionato
+  const chips = document.querySelectorAll(`#lotti-chips-${ingrIdx} div`);
+  chips.forEach((c,ci) => {
+    c.style.background = ci===lottoIdx ? 'var(--purple-d)' : 'var(--surf2)';
+    c.style.borderColor = ci===lottoIdx ? 'var(--purple)' : 'var(--border)';
+    c.style.color = ci===lottoIdx ? 'var(--purple)' : 'var(--text2)';
+  });
 }
 
 function saveUsaRicetta() {
@@ -1963,7 +1535,6 @@ function saveUsaRicetta() {
   const firma = document.getElementById('usa-firma').value.trim();
   if(!data||!lotto) { toast('⚠️ Inserisci data e lotto prodotto'); return; }
 
-  // Raccoglie ingredienti con lotti
   const ingredienti = ricettaAttiva.ingredienti.map((ig, i) => ({
     nome:      ig.nome,
     fornitore: ig.fornitore||'',
@@ -1971,15 +1542,28 @@ function saveUsaRicetta() {
     scadenza:  document.getElementById('usa-scad-'+i)?.value||'',
   }));
 
-  // Costruisce testo per stampa compatibile DOC 07
-  const ingrTxt  = ingredienti.map(ig=>ig.nome).join(', ');
+  // Salva i lotti usati nel registro lotti per riutilizzo futuro
+  const lottiSalvati = ldObj(K_LOTTI);
+  ingredienti.forEach(ig => {
+    if(!ig.lotto) return;
+    if(!lottiSalvati[ig.nome]) lottiSalvati[ig.nome] = [];
+    // Aggiunge solo se non già presente
+    const esiste = lottiSalvati[ig.nome].some(l => l.lotto === ig.lotto);
+    if(!esiste) {
+      lottiSalvati[ig.nome].unshift({ lotto: ig.lotto, scadenza: ig.scadenza, fornitore: ig.fornitore, data });
+      // Mantieni max 5 lotti per ingrediente
+      if(lottiSalvati[ig.nome].length > 5) lottiSalvati[ig.nome].pop();
+    }
+  });
+  svObj(K_LOTTI, lottiSalvati);
+
+  const ingrTxt    = ingredienti.map(ig=>ig.nome).join(', ');
   const estremiTxt = ingredienti.map(ig=>`${ig.nome}: lotto ${ig.lotto||'—'}${ig.scadenza?' scad.'+fmt(ig.scadenza):''}${ig.fornitore?' ('+ig.fornitore+')':''}`).join(' | ');
 
   const r = {
     id: Date.now(), tipo:'prod', stato:'ok',
     data, prod: ricettaAttiva.nome, lotto, firma,
-    ingr: ingrTxt, estr: estremiTxt,
-    ingredienti, // struttura completa per stampa dettagliata
+    ingr: ingrTxt, estr: estremiTxt, ingredienti,
   };
   const arr = ld(K.prod); arr.unshift(r); sv(K.prod, arr);
   toast('✅ Produzione registrata');
@@ -2458,44 +2042,63 @@ function toggleShareDoc(tipo) {
 }
 
 function buildHtmlPerDocumento(tipo) {
-  // Riusa la logica di printDoc ma restituisce solo il body HTML
-  // (chiamiamo printDoc internamente ma catturiamo l'HTML)
-  const CSS = `
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #000; background: #fff; }
-      .doc-header { border: 2px solid #000; padding: 8px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-      .doc-header .azienda { font-size: 13px; font-weight: bold; }
-      .doc-header .titolo  { font-size: 12px; font-weight: bold; text-align: center; }
-      .doc-header .docnum  { font-size: 11px; font-weight: bold; font-family: monospace; }
-      .mese-lbl { font-size: 11px; font-weight: bold; margin-bottom: 8px; }
-      table { width: 100%; border-collapse: collapse; }
-      th { background: #222; color: #fff; padding: 5px 4px; font-size: 8px; text-align: center; border: 1px solid #000; }
-      td { border: 1px solid #888; padding: 4px 3px; font-size: 9px; text-align: center; min-height: 18px; }
-      td.gg { background: #eee; font-weight: bold; font-family: monospace; }
-      td.val-out { background: #fdd; color: #c00; font-weight: bold; }
-      td.val-ok  { color: #060; }
-      .nota { font-size: 8px; color: #555; margin-top: 6px; font-style: italic; }
-      .footer { margin-top: 14px; border-top: 1px solid #000; padding-top: 6px; display: flex; justify-content: space-between; font-size: 8px; color: #555; }
-      .section-block { border: 1px solid #ccc; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; page-break-inside: avoid; }
-      .section-block .sb-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-      .sb-title { font-size: 11px; font-weight: bold; }
-      .sb-date  { font-size: 9px; color: #555; font-family: monospace; }
-      .sb-row   { display: flex; gap: 16px; margin-top: 5px; flex-wrap: wrap; }
-      .sb-field { flex: 1; min-width: 120px; }
-      .sb-label { font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #777; font-weight: bold; }
-      .sb-val   { font-size: 10px; border-bottom: 1px solid #ddd; padding-bottom: 2px; margin-top: 1px; min-height: 14px; }
-      .sb-full  { width: 100%; }
-      .page-break { page-break-before: always; }
-      @page { size: A4; margin: 12mm; }
-      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    </style>`;
+  const CSS = `<style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial,sans-serif;font-size:9px;color:#000;background:#fff;}
+    h1{font-size:13px;font-weight:bold;text-align:center;margin-bottom:2px;}
+    h2{font-size:10px;font-weight:bold;text-align:center;margin-bottom:8px;color:#444;}
+    .doc-wrap{border:2px solid #000;padding:8px 10px;margin-bottom:10px;}
+    .doc-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #000;padding-bottom:5px;margin-bottom:6px;}
+    .doc-top .azienda{font-size:12px;font-weight:bold;}
+    .doc-top .docnum{font-size:11px;font-weight:bold;font-family:monospace;border:1.5px solid #000;padding:2px 8px;}
+    .mese{font-size:10px;font-weight:bold;margin-bottom:6px;}
+    table{width:100%;border-collapse:collapse;table-layout:fixed;}
+    th{background:#1a1a1a;color:#fff;padding:5px 2px;font-size:7.5px;text-align:center;border:1px solid #000;line-height:1.2;vertical-align:middle;}
+    th.wide{font-size:7px;}
+    td{border:1px solid #888;padding:3px 2px;font-size:8.5px;text-align:center;height:16px;vertical-align:middle;}
+    td.gg{background:#e8e8e8;font-weight:bold;font-family:monospace;font-size:9px;border:1px solid #555;width:24px;}
+    td.out{background:#fcc;color:#900;font-weight:bold;}
+    td.ok{color:#060;}
+    td.firma-cell{min-width:60px;font-size:8px;}
+    tr:nth-child(even) td{background:#f9f9f9;}
+    tr:nth-child(even) td.gg{background:#ddd;}
+    tr:nth-child(even) td.out{background:#fcc;}
+    .nota{font-size:7.5px;color:#555;margin:4px 0 6px;font-style:italic;}
+    .footer{margin-top:10px;border-top:1px solid #000;padding-top:5px;display:flex;justify-content:space-between;font-size:7px;color:#555;}
+    /* Sezioni per DOC 03/04/06/07 */
+    .scheda{border:1px solid #aaa;margin-bottom:8px;page-break-inside:avoid;}
+    .scheda-head{background:#1a1a1a;color:#fff;display:flex;justify-content:space-between;padding:5px 8px;}
+    .scheda-head .sh-title{font-size:10px;font-weight:bold;}
+    .scheda-head .sh-date{font-size:9px;font-family:monospace;}
+    .scheda-body{padding:6px 8px;}
+    .campi{display:flex;flex-wrap:wrap;gap:0;}
+    .campo{flex:1;min-width:100px;border-right:1px solid #ddd;padding:4px 6px;}
+    .campo:last-child{border-right:none;}
+    .campo.full{flex:100%;border-right:none;border-top:1px solid #ddd;}
+    .campo label{font-size:6.5px;text-transform:uppercase;letter-spacing:.07em;color:#777;font-weight:bold;display:block;margin-bottom:2px;}
+    .campo .val{font-size:9px;border-bottom:1px solid #ccc;padding-bottom:2px;min-height:13px;}
+    /* tabella ingredienti DOC07 */
+    .ing-table{width:100%;border-collapse:collapse;margin-top:4px;}
+    .ing-table th{background:#444;color:#fff;font-size:7px;padding:3px 5px;text-align:left;border:1px solid #000;}
+    .ing-table td{border:1px solid #ccc;font-size:8px;padding:3px 5px;text-align:left;}
+    .page-break{page-break-before:always;}
+    @page{size:A4 landscape;margin:10mm;}
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  </style>`;
 
-  const dh = (num, titolo) => `<div class="doc-header"><div class="azienda">AZ. AGR. IL CASTELLACCIO</div><div class="titolo">${titolo}</div><div class="docnum">${num}</div></div>`;
-  const df = () => `<div class="footer"><span>GROW S.r.l. – Via F. Martella, 4 – 64025 Pineto (TE)</span><span>Stampato: ${new Date().toLocaleDateString('it-IT')}</span></div>`;
+  const dh = (num, titolo, sottotitolo='') => `
+    <div class="doc-wrap">
+      <div class="doc-top">
+        <div class="azienda">AZ. AGR. IL CASTELLACCIO</div>
+        <div style="text-align:center"><div style="font-size:11px;font-weight:bold">${titolo}</div>${sottotitolo?`<div style="font-size:8px;color:#555;margin-top:1px">${sottotitolo}</div>`:''}</div>
+        <div class="docnum">${num}</div>
+      </div>`;
+  const dc = () => `</div>`;
+  const df = () => `<div class="footer"><span>AZ. AGR. IL CASTELLACCIO – Elaborato da: GROW S.r.l., Via F. Martella 4, 64025 Pineto (TE)</span><span>Stampato il ${new Date().toLocaleDateString('it-IT')}</span></div>`;
 
   let body = '';
 
+  // ── DOC 01 TEMPERATURE ────────────────────────────────────────────────────
   if(tipo === 'temp') {
     const gm = gridMonth.temp, gy = gm.getFullYear(), gmonth = gm.getMonth();
     const days = new Date(gy, gmonth+1, 0).getDate();
@@ -2508,17 +2111,34 @@ function buildHtmlPerDocumento(tipo) {
       for(let c=0; c<8; c++) {
         const k = mkKey('temp',gy,gmonth,g,c), v = stored[k]||'';
         const rng = FRIGO_RANGE[c];
-        let cls = v!==''?((parseFloat(v)<rng.min||parseFloat(v)>rng.max)?'val-out':'val-ok'):'';
-        cells += `<td class="${cls}">${v!==''?v+'°':'—'}</td>`;
+        const nv = parseFloat(v);
+        const cls = v!=='' ? ((nv<rng.min||nv>rng.max)?'out':'ok') : '';
+        cells += `<td class="${cls}">${v!==''?v+'°':''}</td>`;
       }
       const kf = mkKey('temp',gy,gmonth,g,'f');
-      cells += `<td>${stored[kf]||''}</td>`;
-      rows += `<tr><td class="gg">${gs}</td>${cells}</tr>`;
+      rows += `<tr><td class="gg">${gs}</td>${cells}<td class="firma-cell">${stored[kf]||''}</td></tr>`;
     }
-    body = `${dh('DOC 01','REGISTRO DELLE TEMPERATURE')}<div class="mese-lbl">Mese: ${ml}</div>
-      <p class="nota" style="margin-bottom:6px">Frigo T ≤ 4°C ±2°C | Freezer T ≤ -18°C ±3°C | rosso = fuori range</p>
-      <table><thead><tr><th>GG</th><th>F1 Cucina</th><th>F2 Antipasti</th><th>F3 Griglia</th><th>F4 Pasta/Form.</th><th>F5 Carni</th><th>F6 Corridoio</th><th>F7 Sala</th><th>CONG.</th><th>FIRMA</th></tr></thead><tbody>${rows}</tbody></table>${df()}`;
+    body = dh('DOC 01','REGISTRO DELLE TEMPERATURE') +
+      `<div class="mese">Mese: ${ml} &nbsp;|&nbsp; Temperatura ottimale frigoriferi: T 0→3°C (Carni: 0→2°C) &nbsp;|&nbsp; Freezer: -18→-15°C</div>
+      <table>
+        <colgroup><col style="width:24px"><col><col><col><col><col><col><col><col><col style="width:70px"></colgroup>
+        <thead><tr>
+          <th>GG</th>
+          <th>F1<br><span style="font-weight:normal;font-size:6.5px">Cucina<br>0→3°C</span></th>
+          <th>F2<br><span style="font-weight:normal;font-size:6.5px">Antipasti<br>0→3°C</span></th>
+          <th>F3<br><span style="font-weight:normal;font-size:6.5px">Griglia<br>0→3°C</span></th>
+          <th>F4<br><span style="font-weight:normal;font-size:6.5px">Pasta/Form.<br>0→3°C</span></th>
+          <th>F5<br><span style="font-weight:normal;font-size:6.5px">Carni<br>0→2°C</span></th>
+          <th>F6<br><span style="font-weight:normal;font-size:6.5px">Corridoio<br>0→3°C</span></th>
+          <th>F7<br><span style="font-weight:normal;font-size:6.5px">Sala<br>0→3°C</span></th>
+          <th>CONG.<br><span style="font-weight:normal;font-size:6.5px">Corridoio<br>-18→-15°C</span></th>
+          <th>FIRMA</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>` + dc() + df();
   }
+
+  // ── DOC 02 SANIFICAZIONI ──────────────────────────────────────────────────
   else if(tipo === 'san') {
     const gm = gridMonth.san, gy = gm.getFullYear(), gmonth = gm.getMonth();
     const days = new Date(gy, gmonth+1, 0).getDate();
@@ -2529,62 +2149,123 @@ function buildHtmlPerDocumento(tipo) {
     for(let g=1; g<=days; g++) {
       const gs = String(g).padStart(2,'0');
       const kpre = mkKey('san',gy,gmonth,g,'pre');
-      let cells = `<td>${stored[kpre]||''}</td>`;
+      let cells = `<td style="font-weight:bold">${stored[kpre]||''}</td>`;
       zoneKeys.forEach(z => { const k=mkKey('san',gy,gmonth,g,z); cells+=`<td>${stored[k]==='1'?'✓':''}</td>`; });
       const kf = mkKey('san',gy,gmonth,g,'f');
-      cells += `<td>${stored[kf]||''}</td>`;
-      rows += `<tr><td class="gg">${gs}</td>${cells}</tr>`;
+      rows += `<tr><td class="gg">${gs}</td>${cells}<td class="firma-cell">${stored[kf]||''}</td></tr>`;
     }
-    body = `${dh('DOC 02','REGISTRO SANIFICAZIONI')}<div class="mese-lbl">Mese: ${ml}</div>
-      <table><thead><tr><th>GG</th><th>C/NC</th><th>Piani</th><th>Pav.</th><th>Utensili</th><th>Servizi</th><th>Affett.</th><th>Forni</th><th>Cappe</th><th>Frigo</th><th>Portafr.</th><th>Tritac.</th><th>Ripiani</th><th>Porte</th><th>FIRMA</th></tr></thead><tbody>${rows}</tbody></table>${df()}`;
+    body = dh('DOC 02','REGISTRO SANIFICAZIONI',`Mese: ${ml}`) +
+      `<table>
+        <colgroup><col style="width:24px"><col style="width:36px"><col><col><col><col><col><col><col><col><col><col><col><col><col style="width:65px"></colgroup>
+        <thead><tr>
+          <th>GG</th><th class="wide">CONTROLLO<br>PRE-OP<br>C/NC</th>
+          <th class="wide">Piani di lavoro<br>taglieri</th><th class="wide">Pavi-<br>menti</th>
+          <th class="wide">Piccoli<br>utensili</th><th class="wide">Servizi<br>igienici</th>
+          <th class="wide">Affett.<br>robot</th><th class="wide">Forni<br>braciere</th>
+          <th class="wide">Cappe</th><th class="wide">Frigo/<br>freezer/<br>abbatt.</th>
+          <th class="wide">Porta-<br>frutta</th><th class="wide">Tritac.<br>sfoglia</th>
+          <th class="wide">Ripiani<br>scaffali</th><th class="wide">Porte<br>finestre</th>
+          <th>FIRMA</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>` + dc() + df();
   }
+
+  // ── DOC 03 NON CONFORMITÀ ─────────────────────────────────────────────────
   else if(tipo === 'nc') {
     const arr = ld(K.nc);
-    const blocks = arr.length ? arr.map(r=>`<div class="section-block">
-      <div class="sb-header"><span class="sb-title">Non Conformità</span><span class="sb-date">${fmt(r.data)}</span></div>
-      <div class="sb-row"><div class="sb-field"><div class="sb-label">Prodotto</div><div class="sb-val">${r.prod||'—'}</div></div><div class="sb-field"><div class="sb-label">Fornitore</div><div class="sb-val">${r.forn||'—'}</div></div></div>
-      <div class="sb-row" style="margin-top:6px"><div class="sb-field sb-full"><div class="sb-label">Descrizione anomalia</div><div class="sb-val">${r.desc||'—'}</div></div></div>
-      <div class="sb-row" style="margin-top:6px"><div class="sb-field sb-full"><div class="sb-label">Azione correttiva</div><div class="sb-val">${r.az||'—'}</div></div></div>
-    </div>`).join('') : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna registrazione.</p>';
-    body = `${dh('DOC 03','REGISTRO DELLE NON CONFORMITÀ')}${blocks}${df()}`;
+    const schede = arr.length ? arr.map(r=>`
+      <div class="scheda">
+        <div class="scheda-head"><span class="sh-title">NON CONFORMITÀ</span><span class="sh-date">${fmt(r.data)}</span></div>
+        <div class="scheda-body">
+          <div class="campi">
+            <div class="campo"><label>Prodotto</label><div class="val">${r.prod||''}</div></div>
+            <div class="campo"><label>Fornitore</label><div class="val">${r.forn||''}</div></div>
+          </div>
+          <div class="campi" style="margin-top:4px">
+            <div class="campo full"><label>Descrizione anomalia</label><div class="val" style="min-height:20px">${r.desc||''}</div></div>
+          </div>
+          <div class="campi" style="margin-top:4px">
+            <div class="campo full"><label>Azione correttiva (scarto, reso o altro)</label><div class="val" style="min-height:20px">${r.az||''}</div></div>
+          </div>
+        </div>
+      </div>`).join('')
+      : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna non conformità registrata.</p>';
+    body = dh('DOC 03','REGISTRO DELLE NON CONFORMITÀ') +
+      `<p class="nota">Compilare solo in caso di anomalie. Riportare l'anomalia riscontrata e le azioni correttive intraprese (scarto, reso o altro).</p>
+      ${schede}` + dc() + df();
   }
+
+  // ── DOC 04 MANUTENZIONE ───────────────────────────────────────────────────
   else if(tipo === 'man') {
     const arr = ld(K.man);
-    const blocks = arr.length ? arr.map(r=>`<div class="section-block">
-      <div class="sb-header"><span class="sb-title">${r.loc||'—'}</span><span class="sb-date">${fmt(r.data)}</span></div>
-      <div class="sb-row"><div class="sb-field sb-full"><div class="sb-label">Descrizione intervento</div><div class="sb-val">${r.desc||'—'}</div></div></div>
-      <div class="sb-row" style="margin-top:6px"><div class="sb-field"><div class="sb-label">Firma</div><div class="sb-val">${r.firma||'—'}</div></div></div>
-    </div>`).join('') : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna registrazione.</p>';
-    body = `${dh('DOC 04','REGISTRO MANUTENZIONE LOCALI, ATTREZZATURE, IMPIANTI')}${blocks}${df()}`;
+    const schede = arr.length ? arr.map(r=>`
+      <div class="scheda">
+        <div class="scheda-head"><span class="sh-title">MANUTENZIONE</span><span class="sh-date">${fmt(r.data)}</span></div>
+        <div class="scheda-body">
+          <div class="campi">
+            <div class="campo" style="flex:2"><label>Locale / Attrezzatura / Impianto</label><div class="val">${r.loc||''}</div></div>
+            <div class="campo"><label>Firma</label><div class="val">${r.firma||''}</div></div>
+          </div>
+          <div class="campi" style="margin-top:4px">
+            <div class="campo full"><label>Descrizione intervento</label><div class="val" style="min-height:22px">${r.desc||''}</div></div>
+          </div>
+        </div>
+      </div>`).join('')
+      : '<p style="color:#999;padding:16px 0;font-style:italic">Nessun intervento registrato.</p>';
+    body = dh('DOC 04','REGISTRO MANUTENZIONE LOCALI, ATTREZZATURE, IMPIANTI') +
+      `<p class="nota">In caso di manutenzione registrare il tipo di intervento effettuato e firmare a garanzia di quanto riportato.</p>
+      ${schede}` + dc() + df();
   }
+
+  // ── DOC 06 ABBATTIMENTO ───────────────────────────────────────────────────
   else if(tipo === 'abb') {
     const arr = ld(K.abb);
-    const blocks = arr.length ? arr.map(r=>`<div class="section-block">
-      <div class="sb-header"><span class="sb-title">${r.prod||'—'}</span><span class="sb-date">${fmt(r.data)}</span></div>
-      <div class="sb-row">
-        <div class="sb-field"><div class="sb-label">Quantità</div><div class="sb-val">${r.qta||'—'}</div></div>
-        <div class="sb-field"><div class="sb-label">Temperatura</div><div class="sb-val">${r.temp!==''?r.temp+'°C':'—'}</div></div>
-        <div class="sb-field"><div class="sb-label">Tempo</div><div class="sb-val">${r.tempo||'—'}</div></div>
-      </div>
-      <div class="sb-row" style="margin-top:6px">
-        <div class="sb-field"><div class="sb-label">Data somministrazione</div><div class="sb-val">${fmt(r.somm)}</div></div>
-        <div class="sb-field"><div class="sb-label">Firma</div><div class="sb-val">${r.firma||'—'}</div></div>
-      </div>
-    </div>`).join('') : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna registrazione.</p>';
-    body = `${dh('DOC 06','REGISTRO DELLE OPERAZIONI DI ABBATTIMENTO')}${blocks}${df()}`;
+    const schede = arr.length ? arr.map(r=>`
+      <div class="scheda">
+        <div class="scheda-head"><span class="sh-title">${r.prod||'ABBATTIMENTO'}</span><span class="sh-date">${fmt(r.data)}</span></div>
+        <div class="scheda-body">
+          <div class="campi">
+            <div class="campo"><label>Quantità</label><div class="val">${r.qta||''}</div></div>
+            <div class="campo"><label>Temperatura utilizzata (°C)</label><div class="val">${r.temp!==''?r.temp+'°C':''}</div></div>
+            <div class="campo"><label>Tempo impiegato</label><div class="val">${r.tempo||''}</div></div>
+            <div class="campo"><label>Data somministrazione</label><div class="val">${fmt(r.somm)}</div></div>
+            <div class="campo"><label>Firma</label><div class="val">${r.firma||''}</div></div>
+          </div>
+        </div>
+      </div>`).join('')
+      : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna operazione di abbattimento registrata.</p>';
+    body = dh('DOC 06','REGISTRO DELLE OPERAZIONI DI ABBATTIMENTO') + schede + dc() + df();
   }
+
+  // ── DOC 07 PRODUZIONI ─────────────────────────────────────────────────────
   else if(tipo === 'prod') {
     const arr = ld(K.prod);
-    const blocks = arr.length ? arr.map(r=>`<div class="section-block">
-      <div class="sb-header"><span class="sb-title">${r.prod||'—'}</span><span class="sb-date">${fmt(r.data)}</span></div>
-      <div class="sb-row">
-        <div class="sb-field"><div class="sb-label">Lotto</div><div class="sb-val" style="font-family:monospace">${r.lotto||'—'}</div></div>
-        <div class="sb-field"><div class="sb-label">Firma</div><div class="sb-val">${r.firma||'—'}</div></div>
-      </div>
-      <div class="sb-row" style="margin-top:6px"><div class="sb-field sb-full"><div class="sb-label">Ingredienti</div><div class="sb-val">${r.ingr||'—'}</div></div></div>
-      <div class="sb-row" style="margin-top:6px"><div class="sb-field sb-full"><div class="sb-label">Estremi identificativi ingredienti</div><div class="sb-val">${r.estr||'—'}</div></div></div>
-    </div>`).join('') : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna registrazione.</p>';
-    body = `${dh('DOC 07','REGISTRO PRODUZIONI')}${blocks}${df()}`;
+    const schede = arr.length ? arr.map(r=>{
+      const ingrHtml = (r.ingredienti && r.ingredienti.length)
+        ? `<table class="ing-table"><thead><tr>
+            <th>Ingrediente</th><th>Fornitore</th>
+            <th>Lotto / Estremi identificativi</th><th>Scadenza</th>
+          </tr></thead><tbody>${r.ingredienti.map(ig=>`<tr>
+            <td>${ig.nome||''}</td><td>${ig.fornitore||'—'}</td>
+            <td style="font-family:monospace">${ig.lotto||'—'}</td>
+            <td>${ig.scadenza?fmt(ig.scadenza):'—'}</td>
+          </tr>`).join('')}</tbody></table>`
+        : `<div class="val" style="min-height:18px;font-size:8px">${r.ingr||''}</div>
+           <div style="margin-top:4px"><label style="font-size:6.5px;text-transform:uppercase;color:#777;font-weight:bold">Estremi identificativi</label><div class="val" style="min-height:18px;font-size:8px">${r.estr||''}</div></div>`;
+      return `<div class="scheda">
+        <div class="scheda-head"><span class="sh-title">${r.prod||''}</span><span class="sh-date">Data produzione: ${fmt(r.data)}</span></div>
+        <div class="scheda-body">
+          <div class="campi">
+            <div class="campo"><label>Lotto attribuito</label><div class="val" style="font-family:monospace">${r.lotto||''}</div></div>
+            <div class="campo"><label>Firma operatore / delegato</label><div class="val">${r.firma||''}</div></div>
+          </div>
+          <div style="margin-top:6px"><label style="font-size:6.5px;text-transform:uppercase;color:#777;font-weight:bold;display:block;margin-bottom:3px">Ingredienti e estremi identificativi</label>${ingrHtml}</div>
+        </div>
+      </div>`;
+    }).join('')
+    : '<p style="color:#999;padding:16px 0;font-style:italic">Nessuna produzione registrata.</p>';
+    body = dh('DOC 07','REGISTRO PRODUZIONI') + schede + dc() + df();
   }
 
   return { CSS, body };
@@ -2592,6 +2273,7 @@ function buildHtmlPerDocumento(tipo) {
 
 function buildHtmlCompleto() {
   const tipi = Object.keys(SHARE_DOCS).filter(t => SHARE_DOCS[t]);
+  if(!tipi.length) return '';
   let fullBody = '';
   tipi.forEach((tipo, idx) => {
     const { body } = buildHtmlPerDocumento(tipo);
@@ -2625,19 +2307,18 @@ function eseguiCondivisione() {
 
 function apriAnteprimaStampa() {
   if(!_htmlCache) return;
-  // Data URL: funziona sempre, non viene bloccato come popup
-  // perché è un href diretto, non window.open
-  const b64 = btoa(unescape(encodeURIComponent(_htmlCache)));
-  const dataUrl = 'data:text/html;base64,' + b64;
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.target = '_blank';
-  a.rel = 'noopener';
+  const blob = new Blob([_htmlCache], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `HACCP_Castellaccio_${oggi()}.html`;
+  a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
   closeShare();
-  toast('📄 Documento aperto — ⋮ → Stampa → Salva in Drive');
+  toast('📄 File scaricato — aprilo da Chrome e usa ⋮ → Stampa → Salva in Drive');
 }
 
 function eseguiStampa() {
@@ -2645,18 +2326,6 @@ function eseguiStampa() {
   if(!tipi.length) { toast('⚠️ Nessun documento selezionato'); return; }
   _htmlCache = buildHtmlCompleto();
   apriAnteprimaStampa();
-}
-
-function eseguiStampa() {
-  const tipi = Object.keys(SHARE_DOCS).filter(t => SHARE_DOCS[t]);
-  if(!tipi.length) { toast('⚠️ Nessun documento selezionato'); return; }
-  const html = buildHtmlCompleto();
-  const w = window.open('','_blank','width=900,height=700');
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  setTimeout(() => { w.print(); }, 400);
-  closeShare();
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -2741,4 +2410,6 @@ function chiudiSetup() {
 }
 
 initSetup();
-</script></body></html>
+</script>
+</body>
+</html>
