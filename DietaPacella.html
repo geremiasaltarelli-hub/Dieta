@@ -287,6 +287,8 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </div>
  <div id="consiglioPranzo" class="consiglio-box"></div>
  <div id="suggerimentoRotazionePranzo" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#fff9e6,#fff3cd);border:1.5px solid #c9a84c;font-size:.78rem;color:#7d5a00;line-height:1.5"></div>
+ <div id="suggerimentoCarboPranzo" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#f0f7ff,#e3f0ff);border:1.5px solid #7ab3e0;font-size:.78rem;color:#1a4a7a;line-height:1.5"></div>
+ <div id="verificaQuantitaPranzo" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;font-size:.78rem;line-height:1.5"></div>
 
  <div class="sec-title">Primo piatto — quantità modificabile</div>
  <div class="row-input">
@@ -310,7 +312,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit">
- <input type="number" id="qtaPrimoPranzo" value="150" min="0" max="400" onchange="ricalcola()">
+ <input type="number" id="qtaPrimoPranzo" value="150" min="0" max="400" onchange="aggiornaSuggerimentiCarboEVerifica('P'); ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kPrimoPranzo">— kcal</div>
@@ -318,7 +320,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
 
  <div class="sec-title">Secondo piatto</div>
  <div class="row-input">
- <select id="secondoPranzo" onchange="aggiornaUovoComp('P'); aggiornaSuggerimenti(); ricalcola()">
+ <select id="secondoPranzo" onchange="aggiornaUovoComp('P'); aggiornaSuggerimenti(); aggiornaSuggerimentiCarboEVerifica('P'); ricalcola()">
  <option value="">— scegli il secondo —</option>
  <optgroup label="🥩 Carne (200g) — kcal/100g">
  <option value="pollo_petto|107">Petto pollo / Tacchino (200g → 214 kcal)</option>
@@ -422,7 +424,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit" id="qtaSecPranzoWrap">
- <input type="number" id="qtaSecondoPranzo" value="200" min="0" max="500" onchange="ricalcola()">
+ <input type="number" id="qtaSecondoPranzo" value="200" min="0" max="500" onchange="aggiornaSuggerimentiCarboEVerifica('P'); ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kSecondoPranzo">— kcal</div>
@@ -454,7 +456,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  <option value="patate_sab|77">🥔 Patate sabato (400g → 308 kcal)</option>
  </select>
  <div class="qty-unit">
- <input type="number" id="qtaPanePranzo" value="50" min="0" max="400" onchange="ricalcola()">
+ <input type="number" id="qtaPanePranzo" value="50" min="0" max="400" onchange="aggiornaSuggerimentiCarboEVerifica('P'); ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kPanePranzo">— kcal</div>
@@ -561,6 +563,8 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </div>
  <div id="consiglioCena" class="consiglio-box"></div>
  <div id="suggerimentoRotazioneCena" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#fff9e6,#fff3cd);border:1.5px solid #c9a84c;font-size:.78rem;color:#7d5a00;line-height:1.5"></div>
+ <div id="suggerimentoCarboCena" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;background:linear-gradient(135deg,#f0f7ff,#e3f0ff);border:1.5px solid #7ab3e0;font-size:.78rem;color:#1a4a7a;line-height:1.5"></div>
+ <div id="verificaQuantitaCena" style="display:none;margin-bottom:10px;border-radius:9px;padding:9px 12px;font-size:.78rem;line-height:1.5"></div>
 
  <div class="sec-title">Primo piatto — quantità modificabile</div>
  <div class="row-input">
@@ -586,7 +590,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit" id="qtaPrimoCenaWrap">
- <input type="number" id="qtaPrimoCena" value="100" min="0" max="400" onchange="ricalcola()">
+ <input type="number" id="qtaPrimoCena" value="120" min="0" max="400" onchange="aggiornaSuggerimentiCarboEVerifica('C'); ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kPrimoCena">— kcal</div>
@@ -594,7 +598,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
 
  <div class="sec-title">Secondo piatto</div>
  <div class="row-input">
- <select id="secondoCena" onchange="aggiornaUovoComp('C'); aggiornaSuggerimenti(); ricalcola()">
+ <select id="secondoCena" onchange="aggiornaUovoComp('C'); aggiornaSuggerimenti(); aggiornaSuggerimentiCarboEVerifica('C'); ricalcola()">
  <option value="">— scegli il secondo —</option>
  <optgroup label="🥩 Carne (200g) — kcal/100g">
  <option value="pollo_petto|107">Petto pollo / Tacchino (200g → 214 kcal)</option>
@@ -701,7 +705,7 @@ textarea:focus{outline:none;border-color:var(--green-light);}
  </optgroup>
  </select>
  <div class="qty-unit" id="qtaSecCenaWrap">
- <input type="number" id="qtaSecondoCena" value="200" min="0" max="500" onchange="ricalcola()">
+ <input type="number" id="qtaSecondoCena" value="200" min="0" max="500" onchange="aggiornaSuggerimentiCarboEVerifica('C'); ricalcola()">
  <span>g</span>
  </div>
  <div class="kcal-badge" id="kSecondoCena">— kcal</div>
@@ -1621,7 +1625,7 @@ function caricaDati(d) {
 function resetCampi() {
  IDS_SALVA.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
  olioCount = 0; aggiornaOlio();
- const defaults = {qtaPrimoPranzo:150,qtaSecondoPranzo:200,qtaPanePranzo:50,qtaVerduraPranzo:150,qtaPrimoCena:100,qtaSecondoCena:200,qtaVerduraCena:150};
+ const defaults = {qtaPrimoPranzo:150,qtaSecondoPranzo:200,qtaPanePranzo:50,qtaVerduraPranzo:150,qtaPrimoCena:120,qtaSecondoCena:200,qtaVerduraCena:150};
  Object.entries(defaults).forEach(([id,v]) => { const el = document.getElementById(id); if (el) el.value = v; });
 }
 function salvaGiorno() {
@@ -1829,6 +1833,151 @@ function getKcalPizza() {
  const sel = document.getElementById('pizzaKcal');
  if (!sel || !sel.value) return 0;
  return parseInt(sel.value) || 0;
+}
+
+// ===== SUGGERIMENTO CARBOIDRATI E VERIFICA QUANTITÀ =====
+
+// Porzioni prescritte da Pacella
+const PORZIONI_PACELLA = {
+  primoPranzo:   { grammi: 150, label: 'pasta/cereali pranzo' },
+  primoCena:     { grammi: 120, label: 'pasta/cereali cena' },
+  secondoPranzo: { grammi: 200, label: 'secondo pranzo' },
+  secondoCena:   { grammi: 200, label: 'secondo cena' },
+  panePranzo:    { grammi: 50,  label: 'pane pranzo (sabato 100g)' },
+  paneCena:      { grammi: 120, label: 'pane cena' }
+};
+
+// Carboidrati consigliati in base alla proteina scelta
+// Logica: proteine più pesanti → abbinare carboidrati più leggeri per bilanciare
+const CARBO_PER_PROTEINA = {
+  // Carne
+  pollo_petto:   { note: 'Petto di pollo è leggero (107 kcal/100g) → puoi usare la pasta intera prescritta.',    carbo: 'pasta/riso 150g pranzo, 120g cena' },
+  vitellone:     { note: 'Vitellone è mediamente calorico → bilancia con pasta 150g e poca verdura amidacea.',     carbo: 'pasta/riso 150g, evita patate extra' },
+  hamburger:     { note: 'Hamburger è più calorico → preferisci pasta 150g senza pane aggiuntivo.',                carbo: 'pasta 150g, no pane extra' },
+  agnello:       { note: 'Agnello/castrato è grasso (100g porzione) → pasta ok 150g, evita patate.',              carbo: 'pasta 150g, no patate' },
+  pancetta:      { note: 'Pancetta è molto calorica → pasta 150g ma senza pane né patate.',                       carbo: 'solo pasta 150g' },
+  salsiccia:     { note: 'Salsiccia è calorica → pasta 150g ma senza pane né patate.',                            carbo: 'solo pasta 150g' },
+  // Pesce
+  orata:         { note: 'Orata è magra → puoi usare pasta 150g + pane 50g o patate 200g.',                       carbo: 'pasta 150g + pane 50g oppure patate 200g' },
+  merluzzo:      { note: 'Merluzzo è leggerissimo → puoi usare pasta 150g + pane 50g o patate 200g.',             carbo: 'pasta 150g + pane 50g oppure patate 200g' },
+  salmone:       { note: 'Salmone è grasso → pasta 150g senza pane aggiuntivo.',                                  carbo: 'pasta 150g, no pane extra' },
+  sgombro:       { note: 'Sgombro è grasso → pasta 150g senza pane aggiuntivo.',                                  carbo: 'pasta 150g, no pane extra' },
+  tonno_scatola: { note: 'Tonno al naturale è leggero → pasta 150g + pane 50g.',                                  carbo: 'pasta 150g + pane 50g' },
+  // Uova
+  uova2:         { note: 'Uova (2) sono moderate → pasta 150g + pane 50g o patate 200g.',                        carbo: 'pasta 150g + pane 50g oppure patate 200g' },
+  // Formaggi
+  ricotta:       { note: 'Ricotta è leggera → pasta 150g + pane 50g o patate 200g.',                             carbo: 'pasta 150g + pane 50g oppure patate 200g' },
+  fiordilatte:   { note: 'Mozzarella è moderata → pasta 150g, pane 50g con moderazione.',                        carbo: 'pasta 150g + pane 50g' },
+  parmigiano:    { note: 'Parmigiano è molto calorico → pasta 150g, evita pane e patate.',                       carbo: 'solo pasta 150g, no pane extra' },
+  gorgonzola:    { note: 'Gorgonzola è calorico → pasta 150g, evita pane e patate.',                             carbo: 'solo pasta 150g' },
+  // Legumi
+  ceci:          { note: 'Ceci sono già un carboidrato → riduci pasta a 100-120g o usa pane 50g.',               carbo: 'pasta 100-120g oppure pane 50g (legumi = carboidrato)' },
+  fagioli:       { note: 'Fagioli sono già un carboidrato → riduci pasta a 100-120g o usa pane 50g.',            carbo: 'pasta 100-120g oppure pane 50g (legumi = carboidrato)' },
+  lenticchie:    { note: 'Lenticchie sono già un carboidrato → riduci pasta a 100-120g o usa pane 50g.',         carbo: 'pasta 100-120g oppure pane 50g (legumi = carboidrato)' },
+  // Affettati
+  bresaola:      { note: 'Bresaola è molto magra → pasta 150g + pane 50g.',                                      carbo: 'pasta 150g + pane 50g' },
+  prosciutto_cotto: { note: 'Prosciutto è moderato → pasta 150g + pane 50g.',                                    carbo: 'pasta 150g + pane 50g' }
+};
+
+function aggiornaSuggerimentiCarboEVerifica(pasto) {
+  const suffix = pasto === 'P' ? 'Pranzo' : 'Cena';
+  const secondoId = 'secondo' + suffix;
+  const primoId   = 'primo' + suffix;
+  const qtaPrimoId = 'qtaPrimo' + suffix;
+  const qtaSecondoId = 'qtaSecondo' + suffix;
+  const qtaPaneId  = pasto === 'P' ? 'qtaPanePranzo' : null;
+
+  const secondoEl  = document.getElementById(secondoId);
+  const primoEl    = document.getElementById(primoId);
+  const qtaPrimoEl = document.getElementById(qtaPrimoId);
+  const qtaSecEl   = document.getElementById(qtaSecondoId);
+  const qtaPaneEl  = qtaPaneId ? document.getElementById(qtaPaneId) : null;
+
+  const boxCarbo  = document.getElementById('suggerimentoCarbo' + suffix);
+  const boxVerif  = document.getElementById('verificaQuantita' + suffix);
+
+  if (!secondoEl || !boxCarbo || !boxVerif) return;
+
+  const secondoVal = secondoEl.value;
+  const secondoKey = secondoVal ? secondoVal.split('|')[0] : '';
+
+  // Nascondi se nessun secondo selezionato
+  if (!secondoKey) {
+    boxCarbo.style.display = 'none';
+    boxVerif.style.display = 'none';
+    return;
+  }
+
+  // === SUGGERIMENTO CARBOIDRATI ===
+  const infoCarbo = CARBO_PER_PROTEINA[secondoKey];
+  boxCarbo.style.display = 'block';
+  if (infoCarbo) {
+    boxCarbo.innerHTML = `🍝 <strong>Carboidrati consigliati con questa proteina:</strong><br>${infoCarbo.note}<br><strong>→ ${infoCarbo.carbo}</strong>`;
+  } else {
+    const prescCarbo = pasto === 'P' ? '150g pasta/cereali + pane 50g o patate 200g' : '120g pasta/cereali + pane 120g o patate 200g';
+    boxCarbo.innerHTML = `🍝 <strong>Carboidrati previsti dalla prescrizione:</strong><br>→ ${prescCarbo}`;
+  }
+
+  // === VERIFICA QUANTITÀ ===
+  const errori = [];
+  const ok = [];
+
+  // Verifica primo piatto
+  const qtaPrimo = parseFloat(qtaPrimoEl?.value) || 0;
+  const prescPrimo = pasto === 'P' ? 150 : 120;
+  if (qtaPrimo > 0) {
+    const diff = qtaPrimo - prescPrimo;
+    if (Math.abs(diff) <= 10) {
+      ok.push(`✅ Pasta/cereali: ${qtaPrimo}g (prescritto: ${prescPrimo}g)`);
+    } else if (diff > 10) {
+      errori.push(`⚠️ Pasta/cereali: ${qtaPrimo}g — superi di ${diff}g la porzione prescritta (${prescPrimo}g)`);
+    } else {
+      ok.push(`ℹ️ Pasta/cereali: ${qtaPrimo}g — sotto la porzione prescritta (${prescPrimo}g), ok se intenzionale`);
+    }
+  }
+
+  // Verifica secondo piatto
+  const qtaSecondo = parseFloat(qtaSecEl?.value) || 0;
+  // Porzione speciale per agnello/fegato/pancetta/salsiccia = 100g
+  const porzioniRidotte = ['agnello','fegato','cervello','milza','pancetta','salsiccia','cacciagione'];
+  const prescSecondo = porzioniRidotte.includes(secondoKey) ? 100 : 200;
+  if (qtaSecondo > 0) {
+    const diff = qtaSecondo - prescSecondo;
+    if (Math.abs(diff) <= 10) {
+      ok.push(`✅ Secondo: ${qtaSecondo}g (prescritto: ${prescSecondo}g)`);
+    } else if (diff > 10) {
+      errori.push(`⚠️ Secondo: ${qtaSecondo}g — superi di ${diff}g la porzione prescritta (${prescSecondo}g)`);
+    } else {
+      ok.push(`ℹ️ Secondo: ${qtaSecondo}g — sotto la porzione prescritta (${prescSecondo}g)`);
+    }
+  }
+
+  // Verifica pane (solo pranzo)
+  if (pasto === 'P' && qtaPaneEl) {
+    const qtaPane = parseFloat(qtaPaneEl.value) || 0;
+    const prescPane = 50;
+    if (qtaPane > 0) {
+      const diff = qtaPane - prescPane;
+      if (Math.abs(diff) <= 5) {
+        ok.push(`✅ Pane: ${qtaPane}g (prescritto: ${prescPane}g)`);
+      } else if (diff > 5) {
+        errori.push(`⚠️ Pane: ${qtaPane}g — superi di ${diff}g la porzione prescritta (${prescPane}g)`);
+      }
+    }
+  }
+
+  boxVerif.style.display = 'block';
+  if (errori.length === 0) {
+    boxVerif.style.background = 'linear-gradient(135deg,#f0faf4,#d8f3dc)';
+    boxVerif.style.border = '1.5px solid #40916c';
+    boxVerif.style.color = '#1b4332';
+    boxVerif.innerHTML = ok.join('<br>') || '✅ Porzioni nella norma';
+  } else {
+    boxVerif.style.background = 'linear-gradient(135deg,#fff5f2,#ffeae5)';
+    boxVerif.style.border = '1.5px solid #c1440e';
+    boxVerif.style.color = '#6b2000';
+    boxVerif.innerHTML = errori.join('<br>') + (ok.length ? '<br>' + ok.join('<br>') : '');
+  }
 }
 
 window.onload = () => {
